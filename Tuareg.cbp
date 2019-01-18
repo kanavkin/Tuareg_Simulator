@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="Tuareg" />
+		<Option pch_mode="2" />
+		<Option compiler="gnu_gcc_compiler_for_stm32" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/Tuareg" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gnu_gcc_compiler_for_stm32" />
+				<Compiler>
+					<Add option="-mcpu=cortex-m3" />
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/Tuareg" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gnu_gcc_compiler_for_stm32" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-mcpu=cortex-m3" />
+			<Add option="-mthumb" />
+			<Add option="-fomit-frame-pointer" />
+			<Add option="-Wall" />
+			<Add option="-march=armv7-m -mfloat-abi=soft  -mcpu=cortex-m3" />
+			<Add option="-DSTM32F10X_MD" />
+			<Add option="-DUSE_STDPERIPH_DRIVER" />
+		</Compiler>
+		<Linker>
+			<Add option="-Wl,--gc-sections" />
+		</Linker>
+		<ExtraCommands>
+			<Add after="arm-none-eabi-size $(TARGET_OUTPUT_FILE)" />
+			<Add after="arm-none-eabi-objcopy $(TARGET_OUTPUT_FILE) -Obinary $(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).bin" />
+			<Mode after="always" />
+		</ExtraCommands>
+		<Unit filename="Tuareg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Tuareg.h" />
+		<Unit filename="TunerStudio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="TunerStudio.h" />
+		<Unit filename="config.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="config.h" />
+		<Unit filename="config_pages.h" />
+		<Unit filename="conversion.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="conversion.h" />
+		<Unit filename="debug.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="debug.h" />
+		<Unit filename="decoder.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="decoder.h" />
+		<Unit filename="eeprom.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="eeprom.h" />
+		<Unit filename="eeprom_layout.h" />
+		<Unit filename="ignition.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="ignition.h" />
+		<Unit filename="lowspeed_timers.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="lowspeed_timers.h" />
+		<Unit filename="main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="scheduler.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="scheduler.h" />
+		<Unit filename="sensors.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="sensors.h" />
+		<Unit filename="serial_monitor.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="serial_monitor.h" />
+		<Unit filename="speed.h" />
+		<Unit filename="stm32_libs/SPL/misc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="stm32_libs/SPL/misc.h" />
+		<Unit filename="stm32_libs/SPL/stm32f10x_adc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="stm32_libs/SPL/stm32f10x_adc.h" />
+		<Unit filename="stm32_libs/SPL/stm32f10x_bkp.h" />
+		<Unit filename="stm32_libs/SPL/stm32f10x_can.h" />
+		<Unit filename="stm32_libs/SPL/stm32f10x_cec.h" />
+		<Unit filename="stm32_libs/SPL/stm32f10x_crc.h" />
+		<Unit filename="stm32_libs/SPL/stm32f10x_dac.h" />
+		<Unit filename="stm32_libs/SPL/stm32f10x_dbgmcu.h" />
+		<Unit filename="stm32_libs/SPL/stm32f10x_dma.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="stm32_libs/SPL/stm32f10x_dma.h" />
+		<Unit filename="stm32_libs/SPL/stm32f10x_exti.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="stm32_libs/SPL/stm32f10x_exti.h" />
+		<Unit filename="stm32_libs/SPL/stm32f10x_flash.h" />
+		<Unit filename="stm32_libs/SPL/stm32f10x_fsmc.h" />
+		<Unit filename="stm32_libs/SPL/stm32f10x_gpio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="stm32_libs/SPL/stm32f10x_gpio.h" />
+		<Unit filename="stm32_libs/SPL/stm32f10x_i2c.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="stm32_libs/SPL/stm32f10x_i2c.h" />
+		<Unit filename="stm32_libs/SPL/stm32f10x_iwdg.h" />
+		<Unit filename="stm32_libs/SPL/stm32f10x_pwr.h" />
+		<Unit filename="stm32_libs/SPL/stm32f10x_rcc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="stm32_libs/SPL/stm32f10x_rcc.h" />
+		<Unit filename="stm32_libs/SPL/stm32f10x_rtc.h" />
+		<Unit filename="stm32_libs/SPL/stm32f10x_sdio.h" />
+		<Unit filename="stm32_libs/SPL/stm32f10x_spi.h" />
+		<Unit filename="stm32_libs/SPL/stm32f10x_tim.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="stm32_libs/SPL/stm32f10x_tim.h" />
+		<Unit filename="stm32_libs/SPL/stm32f10x_usart.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="stm32_libs/SPL/stm32f10x_usart.h" />
+		<Unit filename="stm32_libs/SPL/stm32f10x_wwdg.h" />
+		<Unit filename="stm32_libs/boctok/stm32_adc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="stm32_libs/boctok/stm32_adc.h" />
+		<Unit filename="stm32_libs/boctok/stm32_gpio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="stm32_libs/boctok/stm32_gpio.h" />
+		<Unit filename="stm32_libs/core_cm3.h" />
+		<Unit filename="stm32_libs/startup.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="stm32_libs/stm32f10x.h" />
+		<Unit filename="stm32_libs/stm32f10x_conf.h" />
+		<Unit filename="stm32_libs/system_stm32f10x.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="stm32_libs/system_stm32f10x.h" />
+		<Unit filename="table.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="table.h" />
+		<Unit filename="types.h" />
+		<Unit filename="uart.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="uart.h" />
+		<Unit filename="utils.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="utils.h" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<lib_finder disable_auto="1" />
+			<debugger>
+				<remote_debugging>
+					<options conn_type="0" serial_baud="115200" ip_address="localhost" ip_port="4242" additional_cmds="load" additional_cmds_before="file $(TARGET_OUTPUT_BASENAME)" extended_remote="1" />
+				</remote_debugging>
+			</debugger>
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

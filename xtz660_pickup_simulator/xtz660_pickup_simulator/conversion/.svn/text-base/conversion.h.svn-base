@@ -1,0 +1,12 @@
+#ifndef CONVERSION_H_INCLUDED
+#define CONVERSION_H_INCLUDED
+
+void CV_U8Char(U8 , char *);
+void CV_U16Char(U16, char * );
+void CV_MacU8( char * Mac, U8 * Target_Buf );
+void CV_IeeeChar( U8 * first_digit, char * cv_target );
+void CV_PskU8(char * Psk_beg, U8 * PSK_Target);
+U8 CV_CharU8( char * );
+U8 CV_Msize( char * );
+
+#endif // CONVERSION_H_INCLUDED

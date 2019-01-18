@@ -1,0 +1,654 @@
+#include "../chibi/types.h"
+#include "conversion.h"
+
+
+void CV_U8Char(U8 value, char * Target)
+{
+    char * cv_ziffer;
+    cv_ziffer= Target;
+
+    U8 hunderter;
+    U8 zehner;
+
+
+    for(hunderter=0; value > 99; hunderter++)
+    {
+        value -= 100;
+    }
+
+    for(zehner=0; value > 9; zehner++)
+    {
+        value -= 10;
+    }
+
+    //Werte in ASCII
+    *cv_ziffer=(hunderter + 0x30);
+    cv_ziffer++;
+
+    *cv_ziffer=(zehner + 0x30);
+    cv_ziffer++;
+
+    *cv_ziffer=(value + 0x30);
+
+}
+
+void CV_U16Char(U16 value, char * Target)
+{
+    char * cv_ziffer;
+    cv_ziffer= Target;
+
+    U8 zehntausend;
+    U8 tausend;
+    U8 hunderter;
+    U8 zehner;
+
+    for(zehntausend=0; value > 9999; zehntausend++)
+    {
+        value -= 10000;
+    }
+
+    for(tausend=0; value > 999; tausend++)
+    {
+        value -= 1000;
+    }
+
+    for(hunderter=0; value > 99; hunderter++)
+    {
+        value -= 100;
+    }
+
+    for(zehner=0; value > 9; zehner++)
+    {
+        value -= 10;
+    }
+
+    //Werte in ASCII
+    *cv_ziffer=(zehntausend + 0x30);
+    cv_ziffer++;
+
+    *cv_ziffer=(tausend + 0x30);
+    cv_ziffer++;
+
+    *cv_ziffer=(hunderter + 0x30);
+    cv_ziffer++;
+
+    *cv_ziffer=(zehner + 0x30);
+    cv_ziffer++;
+
+    *cv_ziffer=(value + 0x30);
+
+}
+
+U8 CV_CharU8( char * Input )
+{
+    char * cv_stelle;
+    cv_stelle=Input;
+
+    U8 Summe;
+
+    //Hunderter
+    switch( *cv_stelle )
+    {
+        case '1':       Summe=100;
+                        break;
+
+        case '2':       Summe=200;
+                        break;
+
+        default:        Summe=0;
+    }
+
+    cv_stelle++;
+
+    //Zehner
+    switch( *cv_stelle )
+    {
+        case '1':       Summe += 10;
+                        break;
+
+        case '2':       Summe += 20;
+                        break;
+
+        case '3':       Summe += 30;
+                        break;
+
+        case '4':       Summe += 40;
+                        break;
+
+        case '5':       Summe += 50;
+                        break;
+
+        case '6':       if( Summe == 100 )
+                        {
+                            Summe += 60;
+                        }
+                        else
+                        {
+                            Summe=0;
+                        }
+                        break;
+
+        case '7':       if( Summe == 100 )
+                        {
+                            Summe += 70;
+                        }
+                        else
+                        {
+                            Summe=0;
+                        }
+                        break;
+
+        case '8':       if( Summe == 100 )
+                        {
+                            Summe += 80;
+                        }
+                        else
+                        {
+                            Summe=0;
+                        }
+                        break;
+
+        case '9':       if( Summe == 100 )
+                        {
+                            Summe += 90;
+                        }
+                        else
+                        {
+                            Summe=0;
+                        }
+                        break;
+    }
+
+    cv_stelle++;
+
+    //Einer
+    switch( *cv_stelle )
+    {
+        case '1':       Summe += 1;
+                        break;
+
+        case '2':       Summe += 2;
+                        break;
+
+        case '3':       Summe += 3;
+                        break;
+
+        case '4':       Summe += 4;
+                        break;
+
+        case '5':       Summe += 5;
+                        break;
+
+        case '6':       if( Summe < 250 )
+                        {
+                            Summe += 6;
+                        }
+                        else
+                        {
+                            Summe=0;
+                        }
+                        break;
+
+        case '7':       if( Summe < 250 )
+                        {
+                            Summe += 7;
+                        }
+                        else
+                        {
+                            Summe=0;
+                        }
+                        break;
+
+        case '8':       if( Summe < 250 )
+                        {
+                            Summe += 8;
+                        }
+                        else
+                        {
+                            Summe=0;
+                        }
+                        break;
+
+        case '9':       if( Summe < 250 )
+                        {
+                            Summe += 9;
+                        }
+                        else
+                        {
+                            Summe=0;
+                        }
+                        break;
+    }
+
+
+
+
+
+    //Stellenwertsystem!
+    return Summe;
+
+
+}
+
+void CV_MacU8( char * Mac, U8 * Target_Buf )
+{
+    char * a_in= Mac;
+    U8 * a_out= Target_Buf;
+    U8 cv_cnt;
+    U8 cv_oktett;
+
+
+    for( cv_cnt=0; cv_cnt < 15; cv_cnt++)
+    {
+        //high nibble
+        switch(*a_in)
+        {
+            case '0':
+                        cv_oktett=0x00;
+                        break;
+
+            case '1':
+                        cv_oktett=0x10;
+                        break;
+
+            case '2':
+                        cv_oktett=0x20;
+                        break;
+
+            case '3':
+                        cv_oktett=0x30;
+                        break;
+
+            case '4':
+                        cv_oktett=0x40;
+                        break;
+
+            case '5':
+                        cv_oktett=0x50;
+                        break;
+
+            case '6':
+                        cv_oktett=0x60;
+                        break;
+
+            case '7':
+                        cv_oktett=0x70;
+                        break;
+
+            case '8':
+                        cv_oktett=0x80;
+                        break;
+
+            case '9':
+                        cv_oktett=0x90;
+                        break;
+
+            case 'A':
+                        cv_oktett=0xA0;
+                        break;
+
+            case 'B':
+                        cv_oktett=0xB0;
+                        break;
+
+            case 'C':
+                        cv_oktett=0xC0;
+                        break;
+
+            case 'D':
+                        cv_oktett=0xD0;
+                        break;
+
+            case 'E':
+                        cv_oktett=0xE0;
+                        break;
+
+            case 'F':
+                        cv_oktett=0xF0;
+                        break;
+
+            default:
+                        //beliebiges Trennzeichen wird übersprungen
+                        cv_oktett=0xFF;
+
+        }
+
+        /*
+        wenn es ein Trennzeichen war, mit der nächsten Stelle wieder
+        als high nibble anfangen
+        */
+        if( cv_oktett != 0xFF )
+        {
+            //Nächstes Input-byte
+            a_in++;
+
+            //low nibble
+            switch(*a_in)
+            {
+
+            case '0':
+                        break;
+
+            case '1':
+                        cv_oktett |= 0x01;
+                        break;
+
+            case '2':
+                        cv_oktett |= 0x02;
+                        break;
+
+            case '3':
+                        cv_oktett |= 0x03;
+                        break;
+
+            case '4':
+                        cv_oktett |= 0x04;
+                        break;
+
+            case '5':
+                        cv_oktett |= 0x05;
+                        break;
+
+            case '6':
+                        cv_oktett |= 0x06;
+                        break;
+
+            case '7':
+                        cv_oktett |= 0x07;
+                        break;
+
+            case '8':
+                        cv_oktett |= 0x08;
+                        break;
+
+            case '9':
+                        cv_oktett |= 0x09;
+                        break;
+
+            case 'A':
+                        cv_oktett |= 0x0A;
+                        break;
+
+            case 'B':
+                        cv_oktett |= 0x0B;
+                        break;
+
+            case 'C':
+                        cv_oktett |= 0x0C;
+                        break;
+
+            case 'D':
+                        cv_oktett |= 0x0D;
+                        break;
+
+            case 'E':
+                        cv_oktett |= 0x0E;
+                        break;
+
+            case 'F':
+                        cv_oktett |= 0x0F;
+                        break;
+
+            }
+
+            //Ergebnis
+            *a_out= cv_oktett;
+            a_out++;
+
+        }
+
+        //Nächstes Input-byte
+        a_in++;
+
+    }
+
+}
+
+void CV_IeeeChar( U8 * first_digit, char * cv_target )
+{
+    U8 * adr_in= first_digit;
+    char * adr_out= cv_target;
+    U8 con_verted;
+    U8 cv_wert;
+    U8 cv_sechzehner;
+
+    //für alle 8 Stellen der Adresse
+    for( con_verted=0; con_verted < 8; con_verted++)
+    {
+        //init
+        cv_wert= *adr_in;
+        cv_sechzehner=0;
+
+        //in hex wandeln: high nibble -> durch 16 teilen, rest -> low nibble
+        cv_sechzehner= (cv_wert >> 4);
+        cv_wert &= 0x0F;
+
+        if( cv_sechzehner > 9 )
+        {
+            //Ascii-Tabelle A...F -> 0x41...0x46
+            *adr_out=( cv_sechzehner + 0x37 );
+        }
+        else
+        {
+            //Ascii-Tabelle 0...9 -> 0x30...0x39
+            *adr_out=( cv_sechzehner + 0x30 );
+        }
+
+        //nächste Stelle
+        adr_out++;
+
+        if( cv_wert > 9 )
+        {
+            //Ascii-Tabelle A...F -> 0x41...0x46
+            *adr_out=( cv_wert + 0x37 );
+        }
+        else
+        {
+            //Ascii-Tabelle 0...9 -> 0x30...0x39
+            *adr_out=( cv_wert + 0x30 );
+        }
+
+        //nicht bei der letzten Stelle der Adresse
+        if( con_verted < 7)
+        {
+            //nächste Stelle
+            adr_out++;
+
+            //Trennzeichen
+            *adr_out=':';
+
+            //nächste Stelle, nächstes Oktett
+            adr_out++;
+            adr_in++;
+
+        }
+
+
+    }
+
+}
+
+void CV_PskU8(char * Psk_beg, U8 * PSK_Target)
+{
+    char * psk= Psk_beg;
+    U8 * tgt= PSK_Target;
+    U8 psk_okt;
+
+    U8 cv_oktett;
+
+    for( psk_okt=0; psk_okt < 8; psk_okt++)
+    {
+        //high nibble
+        switch(*psk)
+        {
+            case '0':
+                        cv_oktett=0x00;
+                        break;
+
+            case '1':
+                        cv_oktett=0x10;
+                        break;
+
+            case '2':
+                        cv_oktett=0x20;
+                        break;
+
+            case '3':
+                        cv_oktett=0x30;
+                        break;
+
+            case '4':
+                        cv_oktett=0x40;
+                        break;
+
+            case '5':
+                        cv_oktett=0x50;
+                        break;
+
+            case '6':
+                        cv_oktett=0x60;
+                        break;
+
+            case '7':
+                        cv_oktett=0x70;
+                        break;
+
+            case '8':
+                        cv_oktett=0x80;
+                        break;
+
+            case '9':
+                        cv_oktett=0x90;
+                        break;
+
+            case 'A':
+                        cv_oktett=0xA0;
+                        break;
+
+            case 'B':
+                        cv_oktett=0xB0;
+                        break;
+
+            case 'C':
+                        cv_oktett=0xC0;
+                        break;
+
+            case 'D':
+                        cv_oktett=0xD0;
+                        break;
+
+            case 'E':
+                        cv_oktett=0xE0;
+                        break;
+
+            case 'F':
+                        cv_oktett=0xF0;
+                        break;
+
+            default:
+                        //beliebiges Trennzeichen wird übersprungen
+                        cv_oktett=0xFF;
+
+        }
+
+        /*
+        wenn es ein Trennzeichen war, mit der nächsten Stelle wieder
+        als high nibble anfangen
+        */
+        if( cv_oktett != 0xFF )
+        {
+            //Nächstes Input-byte
+            psk++;
+
+            //low nibble
+            switch(*psk)
+            {
+
+            case '0':
+                        break;
+
+            case '1':
+                        cv_oktett |= 0x01;
+                        break;
+
+            case '2':
+                        cv_oktett |= 0x02;
+                        break;
+
+            case '3':
+                        cv_oktett |= 0x03;
+                        break;
+
+            case '4':
+                        cv_oktett |= 0x04;
+                        break;
+
+            case '5':
+                        cv_oktett |= 0x05;
+                        break;
+
+            case '6':
+                        cv_oktett |= 0x06;
+                        break;
+
+            case '7':
+                        cv_oktett |= 0x07;
+                        break;
+
+            case '8':
+                        cv_oktett |= 0x08;
+                        break;
+
+            case '9':
+                        cv_oktett |= 0x09;
+                        break;
+
+            case 'A':
+                        cv_oktett |= 0x0A;
+                        break;
+
+            case 'B':
+                        cv_oktett |= 0x0B;
+                        break;
+
+            case 'C':
+                        cv_oktett |= 0x0C;
+                        break;
+
+            case 'D':
+                        cv_oktett |= 0x0D;
+                        break;
+
+            case 'E':
+                        cv_oktett |= 0x0E;
+                        break;
+
+            case 'F':
+                        cv_oktett |= 0x0F;
+                        break;
+
+            }
+
+            //Ergebnis
+            *tgt= cv_oktett;
+            tgt++;
+
+        }
+
+        //Nächstes Input-byte
+        psk++;
+    }
+}
+
+U8 CV_Msize( char * In_Array )
+{
+    U8 A_size= sizeof(In_Array);
+
+    //gemeint ist die Länge des Satzes (ohne 0)
+    A_size -= sizeof(char);
+
+
+    return ( A_size / sizeof(char) );
+}
+
+
