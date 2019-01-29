@@ -5,6 +5,7 @@ These are some utility functions and variables used through the main code
 #define UTILS_H
 
 #include "types.h"
+#include "stm32_libs/boctok/boctok_types.h"
 
 //Handy bitsetting macros
 #define BIT_SET(a,b) ((a) |= (1<<(b)))

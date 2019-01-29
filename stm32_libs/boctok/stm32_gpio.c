@@ -1,5 +1,6 @@
 #include "stm32f10x.h"
-
+#include "boctok_types.h"
+#include "stm32_gpio.h"
 
 void GPIO_configure(GPIO_TypeDef * port, uint32_t pin, uint32_t setup)
 {
@@ -51,3 +52,42 @@ void AFIO_map_EXTI(uint32_t line, uint32_t port)
     }
 
 }
+
+
+
+/**
+convenient output pin modification
+*/
+void gpio_set_pin(GPIO_TypeDef * Port, VU32 Pin, output_pin_t Level)
+{
+    //GPIO port pin range 0..15!
+    if(Pin > 15)
+    {
+        return;
+    }
+
+    if(Level == ON)
+    {
+        //on
+        Port->BSRR= (U32) (1<< Pin);
+    }
+    else if(Level == TOGGLE)
+    {
+        if(Port->ODR & (U32) (1<< Pin))
+        {
+            // OFF
+            Port->BRR= (U32) (1<< Pin);
+        }
+        else
+        {
+            //on
+            Port->BSRR= (U32) (1<< Pin);
+        }
+    }
+    else
+    {
+        // OFF
+        Port->BRR= (U32) (1<< Pin);
+    }
+}
+

@@ -308,3 +308,270 @@
 	"ignition.h"
 	"sensors.h"
 
+1548278472 source:/home/oli/tenere/efi/Tuareg_Simulator/conversion.c
+	"stm32_libs/boctok/boctok_types.h"
+	"conversion.h"
+	"uart.h"
+
+1548278862 /home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/boctok/boctok_types.h
+	<stdlib.h>
+	<stdint.h>
+
+1548278319 /home/oli/tenere/efi/Tuareg_Simulator/conversion.h
+	"stm32f10x.h"
+	"stm32_libs/boctok/boctok_types.h"
+
+1547852648 /home/oli/tenere/efi/Tuareg_Simulator/uart.h
+	"stm32f10x.h"
+
+1548431828 source:/home/oli/tenere/efi/Tuareg_Simulator/crank_simulator.c
+	"stm32f10x.h"
+	"stm32_libs/boctok/stm32_gpio.h"
+	"stm32_libs/boctok/boctok_types.h"
+	"crank_simulator.h"
+	"debug.h"
+
+1548278307 /home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/boctok/stm32_gpio.h
+	"boctok_types.h"
+
+1548345825 /home/oli/tenere/efi/Tuareg_Simulator/crank_simulator.h
+	"stm32_libs/boctok/boctok_types.h"
+
+1548370307 source:/home/oli/tenere/efi/Tuareg_Simulator/debug.c
+	"stm32f10x.h"
+	"stm32_libs/boctok/stm32_gpio.h"
+	"stm32_libs/boctok/boctok_types.h"
+	"debug.h"
+	"ignition.h"
+	"uart.h"
+	"conversion.h"
+
+1548369611 /home/oli/tenere/efi/Tuareg_Simulator/debug.h
+	"types.h"
+	"ignition.h"
+
+1548278597 /home/oli/tenere/efi/Tuareg_Simulator/types.h
+	<stdlib.h>
+	<stdint.h>
+
+1548346619 /home/oli/tenere/efi/Tuareg_Simulator/ignition.h
+	"stm32_libs/boctok/stm32_gpio.h"
+
+1548279275 source:/home/oli/tenere/efi/Tuareg_Simulator/lowspeed_timers.c
+	"stm32f10x.h"
+	"stm32_libs/boctok/stm32_adc.h"
+	"types.h"
+	"lowspeed_timers.h"
+	"Tuareg.h"
+	"sensors.h"
+	"TunerStudio.h"
+
+1547852648 /home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/boctok/stm32_adc.h
+
+1548278900 /home/oli/tenere/efi/Tuareg_Simulator/lowspeed_timers.h
+	"stm32_libs/boctok/boctok_types.h"
+
+1548341817 /home/oli/tenere/efi/Tuareg_Simulator/Tuareg.h
+	"stm32_libs/boctok/boctok_types.h"
+	"types.h"
+	"ignition.h"
+	"sensors.h"
+	"crank_simulator.h"
+
+1548340687 /home/oli/tenere/efi/Tuareg_Simulator/sensors.h
+	"types.h"
+
+1547852648 /home/oli/tenere/efi/Tuareg_Simulator/TunerStudio.h
+
+1548279336 source:/home/oli/tenere/efi/Tuareg_Simulator/scheduler.c
+	"stm32f10x.h"
+	"stm32_libs/boctok/stm32_gpio.h"
+	"types.h"
+	"scheduler.h"
+	"ignition.h"
+
+1547852648 /home/oli/tenere/efi/Tuareg_Simulator/scheduler.h
+
+1548340728 source:/home/oli/tenere/efi/Tuareg_Simulator/sensors.c
+	<math.h>
+	"stm32f10x.h"
+	"stm32_libs/boctok/stm32_gpio.h"
+	"stm32_libs/boctok/stm32_adc.h"
+	"types.h"
+	"sensors.h"
+	"uart.h"
+	"conversion.h"
+	"table.h"
+	"config.h"
+
+1547852648 /home/oli/tenere/efi/Tuareg_Simulator/table.h
+	"types.h"
+
+1547910757 /home/oli/tenere/efi/Tuareg_Simulator/config.h
+
+1547852648 source:/home/oli/tenere/efi/Tuareg_Simulator/serial_monitor.c
+
+1547852648 source:/home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/boctok/stm32_adc.c
+	"stm32f10x.h"
+	"stm32_adc.h"
+
+1548278988 source:/home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/boctok/stm32_gpio.c
+	"stm32f10x.h"
+	"boctok_types.h"
+	"stm32_gpio.h"
+
+1547852648 source:/home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/SPL/misc.c
+	"misc.h"
+
+1547852648 /home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/SPL/misc.h
+	"stm32f10x.h"
+
+1547852648 source:/home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/SPL/stm32f10x_adc.c
+	"stm32f10x_adc.h"
+	"stm32f10x_rcc.h"
+
+1547852648 /home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/SPL/stm32f10x_adc.h
+	"stm32f10x.h"
+
+1547852648 /home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/SPL/stm32f10x_rcc.h
+	"stm32f10x.h"
+
+1547852648 source:/home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/SPL/stm32f10x_dma.c
+	"stm32f10x_dma.h"
+	"stm32f10x_rcc.h"
+
+1547852648 /home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/SPL/stm32f10x_dma.h
+	"stm32f10x.h"
+
+1547852648 source:/home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/SPL/stm32f10x_exti.c
+	"stm32f10x_exti.h"
+
+1547852648 /home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/SPL/stm32f10x_exti.h
+	"stm32f10x.h"
+
+1547852648 source:/home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/SPL/stm32f10x_gpio.c
+	"stm32f10x_gpio.h"
+	"stm32f10x_rcc.h"
+
+1547852648 /home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/SPL/stm32f10x_gpio.h
+	"stm32f10x.h"
+
+1547852648 source:/home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/SPL/stm32f10x_i2c.c
+	"stm32f10x_i2c.h"
+	"stm32f10x_rcc.h"
+
+1547852648 /home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/SPL/stm32f10x_i2c.h
+	"stm32f10x.h"
+
+1547852648 source:/home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/SPL/stm32f10x_rcc.c
+	"stm32f10x_rcc.h"
+
+1547852648 source:/home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/SPL/stm32f10x_tim.c
+	"stm32f10x_tim.h"
+	"stm32f10x_rcc.h"
+
+1547852648 /home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/SPL/stm32f10x_tim.h
+	"stm32f10x.h"
+
+1547852648 source:/home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/SPL/stm32f10x_usart.c
+	"stm32f10x_usart.h"
+	"stm32f10x_rcc.h"
+
+1547852648 /home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/SPL/stm32f10x_usart.h
+	"stm32f10x.h"
+
+1547852648 source:/home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/startup.c
+	"stm32f10x.h"
+	"system_stm32f10x.h"
+
+1547852648 /home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/stm32f10x.h
+	"core_cm3.h"
+	"system_stm32f10x.h"
+	<stdint.h>
+	"stm32f10x_conf.h"
+
+1547852648 /home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/core_cm3.h
+	<stdint.h>
+	<intrinsics.h>
+
+1547852648 /home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/system_stm32f10x.h
+
+1547852648 /home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/stm32f10x_conf.h
+	"stm32f10x_adc.h"
+	"stm32f10x_bkp.h"
+	"stm32f10x_can.h"
+	"stm32f10x_cec.h"
+	"stm32f10x_crc.h"
+	"stm32f10x_dac.h"
+	"stm32f10x_dbgmcu.h"
+	"stm32f10x_dma.h"
+	"stm32f10x_exti.h"
+	"stm32f10x_flash.h"
+	"stm32f10x_fsmc.h"
+	"stm32f10x_gpio.h"
+	"stm32f10x_i2c.h"
+	"stm32f10x_iwdg.h"
+	"stm32f10x_pwr.h"
+	"stm32f10x_rcc.h"
+	"stm32f10x_rtc.h"
+	"stm32f10x_sdio.h"
+	"stm32f10x_spi.h"
+	"stm32f10x_tim.h"
+	"stm32f10x_usart.h"
+	"stm32f10x_wwdg.h"
+	"misc.h"
+
+1547852648 source:/home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/system_stm32f10x.c
+	"stm32f10x.h"
+
+1548341625 source:/home/oli/tenere/efi/Tuareg_Simulator/Tuareg.c
+
+1547852648 source:/home/oli/tenere/efi/Tuareg_Simulator/uart.c
+	<stdint.h>
+	<stdlib.h>
+	<string.h>
+	"stm32f10x.h"
+	"stm32_libs/boctok/stm32_gpio.h"
+	"types.h"
+	"uart.h"
+	"lowspeed_timers.h"
+	"conversion.h"
+	"debug.h"
+
+1547852648 source:/home/oli/tenere/efi/Tuareg_Simulator/utils.c
+	"types.h"
+	"utils.h"
+	"config.h"
+
+1548279008 /home/oli/tenere/efi/Tuareg_Simulator/utils.h
+	"types.h"
+	"stm32_libs/boctok/boctok_types.h"
+
+1548368488 source:/home/oli/tenere/efi/Tuareg_Simulator/waveform_buffer.c
+	"stm32f10x.h"
+	"stm32_libs/boctok/boctok_types.h"
+	"waveform_buffer.h"
+
+1548368564 /home/oli/tenere/efi/Tuareg_Simulator/waveform_buffer.h
+
+1548373922 source:/home/oli/tenere/efi/Tuareg_Simulator/main.c
+	"stm32f10x.h"
+	"stm32_libs/boctok/stm32_gpio.h"
+	"stm32_libs/boctok/stm32_adc.h"
+	"types.h"
+	"crank_simulator.h"
+	"ignition.h"
+	"scheduler.h"
+	"uart.h"
+	"conversion.h"
+	"lowspeed_timers.h"
+	"TunerStudio.h"
+	"config.h"
+	"table.h"
+	"eeprom.h"
+	"sensors.h"
+	"debug.h"
+	"Tuareg.h"
+
+1547852648 /home/oli/tenere/efi/Tuareg_Simulator/eeprom.h
+

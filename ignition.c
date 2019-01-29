@@ -5,6 +5,7 @@
 */
 #include "stm32f10x.h"
 #include "stm32_libs/boctok/stm32_gpio.h"
+#include "stm32_libs/boctok/boctok_types.h"
 
 #include "types.h"
 #include "ignition.h"
@@ -19,31 +20,6 @@ characteristics hard coded to this tables!
 */
 const U8 adv_table[]={0, 3, 3, 10, 12, 12, 12, 12, 12, 12, 14, 17, 24, 25, 26, 27, 28, \
 29, 30, 35, 35, 36, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38};
-
-/**
-return the advance (in deg) to a given rpm
-TODO
-handle spark advance table readout with all run and limp modes
-handle configload error
-*/
-U32 get_advance(U32 rpm)
-{
-    if(Tuareg.Runmode == TMODE_RUN)
-    {
-        return table3D_getValue(&ignitionTable, Tuareg.decoder->engine_rpm, Tuareg.sensor_interface->MAP);
-    }
-    else if(rpm <= 8500)
-    {
-        return (U32) adv_table[rpm >> 8];
-    }
-    else
-    {
-        //spark advance for very high revs
-        //TODO make configurable (config page)
-        //TODO handle over revs
-        return 3;
-    }
-}
 
 
 
@@ -207,34 +183,6 @@ void calc_ignition_timings(volatile ignition_timing_t * target_timing)
         target_timing->coil_on_timing= 0;
         target_timing->coil_off_timing= 0;
     }
-}
-
-
-
-void set_ign_ch1(output_pin_t level)
-{
-    if(level == ON)
-    {
-        GPIOB->BSRR= GPIO_BSRR_BS0;
-    }
-    else
-    {
-        // OFF
-        GPIOB->BRR= GPIO_BRR_BR0;
-
-        /**
-        trigger sw irq
-        for ignition timing recalculation
-        */
-        EXTI->SWIER= EXTI_SWIER_SWIER3;
-    }
-}
-
-
-//DEBUG dummy
-void set_ign_ch2(output_pin_t level)
-{
-
 }
 
 

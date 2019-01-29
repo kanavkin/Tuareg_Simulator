@@ -2,6 +2,7 @@
 #define CONVERSION_H_INCLUDED
 
 #include "stm32f10x.h"
+#include "stm32_libs/boctok/boctok_types.h"
 
 #define PAD 0xFFFFFFF
 #define NO_PAD 0

@@ -35,7 +35,7 @@
 			<Add option="-fomit-frame-pointer" />
 			<Add option="-Wall" />
 			<Add option="-march=armv7-m -mfloat-abi=soft  -mcpu=cortex-m3" />
-			<Add option="-DSTM32F10X_MD" />
+			<Add option="-DSTM32F10X_HD" />
 			<Add option="-DUSE_STDPERIPH_DRIVER" />
 		</Compiler>
 		<Linker>
@@ -50,35 +50,23 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="Tuareg.h" />
-		<Unit filename="TunerStudio.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="TunerStudio.h" />
-		<Unit filename="config.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="config.h" />
 		<Unit filename="config_pages.h" />
 		<Unit filename="conversion.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="conversion.h" />
+		<Unit filename="crank_simulator.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="crank_simulator.h" />
 		<Unit filename="debug.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="debug.h" />
-		<Unit filename="decoder.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="decoder.h" />
-		<Unit filename="eeprom.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="eeprom.h" />
 		<Unit filename="eeprom_layout.h" />
-		<Unit filename="ignition.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="ignition.h" />
 		<Unit filename="lowspeed_timers.c">
 			<Option compilerVar="CC" />
@@ -150,6 +138,7 @@
 		</Unit>
 		<Unit filename="stm32_libs/SPL/stm32f10x_usart.h" />
 		<Unit filename="stm32_libs/SPL/stm32f10x_wwdg.h" />
+		<Unit filename="stm32_libs/boctok/boctok_types.h" />
 		<Unit filename="stm32_libs/boctok/stm32_adc.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -168,9 +157,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="stm32_libs/system_stm32f10x.h" />
-		<Unit filename="table.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="table.h" />
 		<Unit filename="types.h" />
 		<Unit filename="uart.c">
@@ -181,6 +167,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="utils.h" />
+		<Unit filename="waveform_buffer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="waveform_buffer.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />

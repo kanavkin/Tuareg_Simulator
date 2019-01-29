@@ -305,7 +305,7 @@ void TIM3_IRQHandler(void)
         /**
         ignition channel 1
         */
-        set_ign_ch1(Scheduler.ign_ch1_action);
+
 
         //clear irq pending bit
         TIM3->SR= (U16) ~TIM_SR_CC1IF;
@@ -320,7 +320,7 @@ void TIM3_IRQHandler(void)
         /**
         ignition channel 2
         */
-        set_ign_ch2(Scheduler.ign_ch2_action);
+
 
         //clear irq pending bit
         TIM3->SR= (U16) ~TIM_SR_CC2IF;

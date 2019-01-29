@@ -15,15 +15,8 @@ typedef struct
 #define DWT_BASE    (0xE0001000)
 #define DWT         ((SWT_Type *) DWT_BASE)
 
-
-
 void init_debug_pins();
-void set_debug_pin( output_pin_t level);
-void set_debug_led( output_pin_t level);
-
-void print_full_state(volatile ignition_timing_t * intime);
-void print_minimal_state(USART_TypeDef * Port, volatile ignition_timing_t * intime);
-
+void set_debug_led(volatile output_pin_t level);
 
 void dwt_init();
 void delay_us(U32 delay);

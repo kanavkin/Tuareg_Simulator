@@ -6,23 +6,14 @@ Note: Denso TNDF13 has inverted ignition transistor output logic
  */
 
 /**
-a little performance analysis:
+the startup code is adjusted for a 8 MHz external crystal
 
-    This was with ATmega328p @ 16 MHz:
-        -calc_rpm() takes about 39 us
-        -calc_ignition_timings() takes about 103,5 us
-        -we are entering this section about 17,6 us after the corresponding
-            trigger signal edge
-        -all the ignition calculation is finished after about 160 us
-            after the corresponding trigger signal edge of IGNITION_RECALC_POSITION
-            this is about 8 deg @ 8500 rpm
-        -the ignition timer is set up after about 22,2 us after POSITION_A2
-            trigger signal edge, this is about 1,13 deq @ 8500 rpm (0.7 deg at average rpms)
+porting to other STM32:
+adjust #define for STMF10X_xx HD/MD/LD
+adjust linker script (compiler options)
 
-    In STM32F103 @ 72 MHz:
-        -ignition set up time (delay from pickup signal trigger to transistor signal change) is about 4us
-        -accuracy: measured 37,6° advance @ 8500 rpm when 38° was set up (7,4us off)
 */
+
 
 
 #include "stm32f10x.h"
@@ -30,7 +21,7 @@ a little performance analysis:
 #include "stm32_libs/boctok/stm32_adc.h"
 
 #include "types.h"
-#include "decoder.h"
+#include "crank_simulator.h"
 #include "ignition.h"
 #include "scheduler.h"
 #include "uart.h"
@@ -45,17 +36,11 @@ a little performance analysis:
 #include "debug.h"
 #include "Tuareg.h"
 
-#define DIAG_MSG_POSITION POSITION_D2
-#define CYLINDER_SENSOR_POSITION POSITION_D2
 
-/**
-global status object
-*/
-volatile Tuareg_t Tuareg;
+volatile Tuareg_simulator_t Tuareg_simulator;
 
-//volatile decoder_t * main_decoder = NULL;
-//volatile ignition_timing_t ignition_timing;
-//volatile sensor_interface_t * hw_sensors = NULL;
+
+VU32 Debug_rpm= 1350;
 
 /**
 Tuareg IRQ priorities:
@@ -108,14 +93,73 @@ how to use platform ressources:
 */
 
 
+void set_engine_type(engine_type_t new_engine)
+{
+    if(new_engine == XTZ750)
+    {
+        //set up crank pattern
+        Tuareg_simulator.crank_simulator->crank_segments[0]= 40;
+        Tuareg_simulator.crank_simulator->crank_segments[1]= 50;
+
+        Tuareg_simulator.crank_simulator->crank_segments[2]= 8;
+        Tuareg_simulator.crank_simulator->crank_segments[3]= 82;
+
+        Tuareg_simulator.crank_simulator->crank_segments[4]= 8;
+        Tuareg_simulator.crank_simulator->crank_segments[5]= 82;
+
+        Tuareg_simulator.crank_simulator->crank_segments[6]= 8;
+        Tuareg_simulator.crank_simulator->crank_segments[7]= 82;
+
+        //set up crank pattern length
+        Tuareg_simulator.crank_simulator->crank_pattern_len= 8;
+    }
+    else if(new_engine == XTZ660)
+    {
+        //set up crank pattern
+        Tuareg_simulator.crank_simulator->crank_segments[0]= 40;
+        Tuareg_simulator.crank_simulator->crank_segments[1]= 50;
+
+        Tuareg_simulator.crank_simulator->crank_segments[2]= 10;
+        Tuareg_simulator.crank_simulator->crank_segments[3]= 80;
+
+        Tuareg_simulator.crank_simulator->crank_segments[4]= 5;
+        Tuareg_simulator.crank_simulator->crank_segments[5]= 85;
+
+        Tuareg_simulator.crank_simulator->crank_segments[6]= 5;
+        Tuareg_simulator.crank_simulator->crank_segments[7]= 85;
+
+        //set up crank pattern length
+        Tuareg_simulator.crank_simulator->crank_pattern_len= 8;
+    }
+
+
+    /*
+    TODO
+    set up cam timing
+    */
+
+}
+
+
+
+void calc_crank_timing(VU32 Engine_rpm)
+{
+    for(VU8 segment=0; segment < (Tuareg_simulator.crank_simulator->crank_pattern_len); segment++)
+    {
+        //t (in us) := 166667 * d (in °) / n (in rpm)
+        Tuareg_simulator.crank_simulator->crank_timer_segments[segment]= Tuareg_simulator.crank_simulator->crank_segments[segment] * 166667UL / Engine_rpm;
+    }
+}
+
+
+
+
+
 
 
 int main(void)
 {
-    U32 config_load_status;
-
-    //starting primary initialisation
-    Tuareg.Runmode= TMODE_PRIMING;
+    init_debug_pins();
 
     //use 16 preemption priority levels
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
@@ -123,96 +167,56 @@ int main(void)
     UART1_Init();
     UART3_Init();
 
-    UART_Send(DEBUG_PORT, "\r \n \r \n . \r \n . \r \n . \r \n \r \n *** This is Tuareg, lord of the Sahara *** \r \n");
+    UART_Send(DEBUG_PORT, "\r \n \r \n . \r \n . \r \n . \r \n \r \n *** This is Tuareg-Simulator *** \r \n");
     UART_Send(DEBUG_PORT, "RC 0001");
+
+    /*
+    TODO
     UART_Send(DEBUG_PORT, "\r \n config: \r \n");
     UART_Send(DEBUG_PORT, "XTZ 660 digital crank signal on GPIOD-0 \r \n");
     UART_Send(DEBUG_PORT, "-GPIOD-0 is A1 on Nucleo-F103RB- \r \n");
     UART_Send(DEBUG_PORT, "\r \n XTZ 660 ignition coil signal on GPIOB-0 \r \n");
     UART_Send(DEBUG_PORT, "-GPIOB-0 is A3 on Nucleo-F103RB- \r \n \r \n");
-
-    //DEBUG
-    UART_Send(DEBUG_PORT, "TunerStudio interface ready \r\n");
-
-    /**
-    set up eeprom for loading configuration data
     */
-    init_eeprom();
 
-    //actually sets table dimension, could be removed
-    init_3Dtables();
+    /*
+    TODO
+    DEBUG
+    UART_Send(DEBUG_PORT, "TunerStudio interface ready \r\n");
+    */
 
-    //begin config load
-    Tuareg.Runmode= TMODE_CONFIGLOAD;
-
-    //loading the config data is important to us, failure in loading forces "limp home mode"
-    config_load_status= load_ConfigData();
-
-    if(config_load_status != 0)
-    {
-        //save to error register
-        Tuareg.Errors |= TERROR_CONFIG;
-
-        //as we can hardly save some error logs in this system condition, print some debug messages only
-        UART_Send(DEBUG_PORT, "\r \n *** FAILED to load config data !");
-    }
-
-    //set 2D table dimension and link table data to config pages
-    init_2Dtables();
-
-    //ready to initialise further system hardware
-    Tuareg.Runmode= TMODE_HWINIT;
 
     /**
     initialize core components and register interface access pointers
     */
-    Tuareg.sensor_interface= init_sensors();
-    Tuareg.decoder= init_decoder();
+    //Tuareg.sensor_interface= init_sensors();
+    Tuareg_simulator.crank_simulator= init_crank_simulation();
     //Tuareg.ignition_timing= &ignition_timing;
-    init_ignition(&Tuareg.ignition_timing);
+    //init_ignition(&Tuareg.ignition_timing);
     init_scheduler();
     init_lowspeed_timers();
 
-    //ready to carry out system migration
-    Tuareg.Runmode= TMODE_MIGRATION;
 
-    /**
-    Check if any data items need updating
-    (Occurs with firmware updates)
-    */
-    migrate_configData();
+    //set up crank simulation
+    set_engine_type(XTZ750);
 
-
-    //DEBUG
-    init_debug_pins();
-
-    //serial monitor
-    #ifdef SERIAL_MONITOR
-    UART1_Send("\r \n serial monitor loaded!");
-    #endif
-
-    /*
-    initialize fuel pump to maintain normal fuel pressure
-    */
-
-
-    /**
-    system initialisation finished
-    now decide which system run mode
-    follows
-    */
-    if(Tuareg.Errors & TERROR_CONFIG)
-    {
-        Tuareg.Runmode= TMODE_LIMP;
-    }
-    else
-    {
-        Tuareg.Runmode= TMODE_RUN;
-    }
+    calc_crank_timing(Debug_rpm);
+    start_crank_simulation();
 
 
     while(1)
     {
+
+        if(ls_timer & BIT_TIMER_1HZ)
+        {
+            ls_timer &= ~BIT_TIMER_1HZ;
+
+            set_debug_led(TOGGLE);
+
+        }
+
+
+
         /**
         handle TS communication
         */
@@ -220,17 +224,11 @@ int main(void)
         {
             ls_timer &= ~BIT_TIMER_10HZ;
 
-            //serial monitor
-            #ifdef SERIAL_MONITOR
-            while( monitor_available() )
-            {
-                monitor_print();
-            }
-            #endif // SERIAL_MONITOR
+
 
             if (UART_available() > 0)
             {
-                ts_communication();
+               // ts_communication();
             }
         }
 
@@ -244,53 +242,18 @@ int main(void)
 
 
 /******************************************************************************************************************************
-sw generated irq when decoder has
-updated crank_position based on crank pickup signal
-or decoder timeout occurred!
+sw generated irq when crank simulator has updated crank_position
+or crank simulator error occurred!
+-> new crank timing required
  ******************************************************************************************************************************/
 void EXTI2_IRQHandler(void)
 {
     //clear pending register
     EXTI->PR= EXTI_Line2;
 
-    /**
-    check if this is a decoder timeout (engine has stalled)
-    -> shut down coils, injectors and fuel pump
-    or
-    a regular crank position update event
-    -> trigger coil handling
-       (immediate action: 4us behind pickup signal edge!)
-    or
-    decoder has lost sync
-    */
-    if((Tuareg.decoder->engine_rpm == 0) && (Tuareg.decoder->crank_position == UNDEFINED_POSITION))
-    {
-        //decoder timeout
+    calc_crank_timing(Debug_rpm);
 
-
-            //DEBUG
-            UART_Send(DEBUG_PORT, "\r \n decoder timeout");
-
-
-    }
-    else if(Tuareg.decoder->crank_position == Tuareg.ignition_timing.coil_on_pos)
-    {
-        trigger_coil_by_timer(Tuareg.ignition_timing.coil_on_timing, ON);
-    }
-    else if(Tuareg.decoder->crank_position == Tuareg.ignition_timing.coil_off_pos)
-    {
-        trigger_coil_by_timer(Tuareg.ignition_timing.coil_off_timing, OFF);
-    }
-
-    /**
-    read the MAP sensor
-    */
-    adc_start_injected_group(SENSOR_ADC);
-
-    /**
-    cylinder identification sensor handling inside decoder module!
-    */
-
+    //set_debug_led(TOGGLE);
 }
 
 /******************************************************************************************************************************
@@ -305,11 +268,10 @@ void EXTI3_IRQHandler(void)
     /**
     recalculate ignition timing
     */
-    calc_ignition_timings(&Tuareg.ignition_timing);
+//    calc_ignition_timings(&Tuareg.ignition_timing);
 
 
-    //DEBUG
-    set_debug_led(TOGGLE);
+
 }
 
 
