@@ -16,9 +16,9 @@ adjust linker script (compiler options)
 
 
 
-#include "stm32f10x.h"
-#include "stm32_libs/boctok/stm32_gpio.h"
-#include "stm32_libs/boctok/stm32_adc.h"
+#include "stm32_libs/stm32f10x/stm32f10x.h"
+#include "stm32_libs/stm32f10x/boctok/stm32f10x_gpio_boctok.h"
+#include "stm32_libs/stm32f10x/boctok/stm32f10x_adc_boctok.h"
 
 #include "types.h"
 #include "crank_simulator.h"
@@ -35,6 +35,7 @@ adjust linker script (compiler options)
 
 #include "debug.h"
 #include "Tuareg.h"
+#include "waveform_buffer.h"
 
 
 volatile Tuareg_simulator_t Tuareg_simulator;
@@ -193,8 +194,12 @@ int main(void)
     Tuareg_simulator.crank_simulator= init_crank_simulation();
     //Tuareg.ignition_timing= &ignition_timing;
     //init_ignition(&Tuareg.ignition_timing);
-    init_scheduler();
+    //init_scheduler();
     init_lowspeed_timers();
+
+
+    //init waveforms
+    waveform_add(CRANK_WAVEFORM, 2, 1000);
 
 
     //set up crank simulation
@@ -220,6 +225,7 @@ int main(void)
         /**
         handle TS communication
         */
+        /*
         if( (ls_timer & BIT_TIMER_10HZ) || (UART_available() > SERIAL_BUFFER_THRESHOLD) )
         {
             ls_timer &= ~BIT_TIMER_10HZ;
@@ -231,7 +237,7 @@ int main(void)
                // ts_communication();
             }
         }
-
+        */
     }
 
     return 0;

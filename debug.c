@@ -4,9 +4,9 @@ that should never be integrated to a
 production version
 */
 
-#include "stm32f10x.h"
-#include "stm32_libs/boctok/stm32_gpio.h"
-#include "stm32_libs/boctok/boctok_types.h"
+#include "stm32_libs/stm32f10x/stm32f10x.h"
+#include "stm32_libs/stm32f10x/boctok/stm32f10x_gpio_boctok.h"
+#include "stm32_libs/boctok_types.h"
 
 
 #include "debug.h"
@@ -42,12 +42,13 @@ void set_debug_led(volatile output_pin_t level)
 
 void init_debug_pins()
 {
-    //Enable PORTB clock
+    //PORT.C13 is led
+
+    //Enable PORTC clock
     RCC->APB2ENR |= RCC_APB2Periph_GPIOC;
 
     //set output mode
     GPIO_configure(GPIOC, 13, GPIO_OUT_OD_2MHZ);
-
 
     //clear
     set_debug_led(OFF);

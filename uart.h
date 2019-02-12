@@ -1,7 +1,7 @@
 #ifndef UART_H_INCLUDED
 #define UART_H_INCLUDED
 
-#include "stm32f10x.h"
+#include "stm32_libs/stm32f10x/stm32f10x.h"
 
 #define TS_PORT USART1
 #define DEBUG_PORT USART3

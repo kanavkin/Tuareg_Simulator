@@ -3,8 +3,8 @@
 #include <string.h>
 
 
-#include "stm32f10x.h"
-#include "stm32_libs/boctok/stm32_gpio.h"
+#include "stm32_libs/stm32f10x/stm32f10x.h"
+#include "stm32_libs/stm32f10x/boctok/stm32f10x_gpio_boctok.h"
 
 #include "types.h"
 #include "uart.h"

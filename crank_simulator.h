@@ -1,7 +1,7 @@
 #ifndef CRANK_SIMULATOR_H_INCLUDED
 #define CRANK_SIMULATOR_H_INCLUDED
 
-#include "stm32_libs/boctok/boctok_types.h"
+#include "stm32_libs/boctok_types.h"
 
 /**
 when to enable cylinder identification sensor irq

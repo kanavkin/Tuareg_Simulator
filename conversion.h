@@ -1,8 +1,8 @@
 #ifndef CONVERSION_H_INCLUDED
 #define CONVERSION_H_INCLUDED
 
-#include "stm32f10x.h"
-#include "stm32_libs/boctok/boctok_types.h"
+#include "stm32_libs/stm32f10x/stm32f10x.h"
+#include "stm32_libs/boctok_types.h"
 
 #define PAD 0xFFFFFFF
 #define NO_PAD 0

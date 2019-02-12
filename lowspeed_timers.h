@@ -1,7 +1,7 @@
 #ifndef TIMERS_H
 #define TIMERS_H
 
-#include "stm32_libs/boctok/boctok_types.h"
+#include "stm32_libs/boctok_types.h"
 
 #define BIT_TIMER_1HZ             0x01
 #define BIT_TIMER_4HZ             0x02

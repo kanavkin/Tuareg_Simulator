@@ -1,0 +1,3 @@
+[submodule "stm32_libs"]
+	path = stm32_libs
+	url = https://github.com/kanavkin/stm32_libs.git

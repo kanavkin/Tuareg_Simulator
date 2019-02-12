@@ -1,22 +1,9 @@
-#include "stm32f10x.h"
-#include "stm32_libs/boctok/stm32_gpio.h"
-#include "stm32_libs/boctok/boctok_types.h"
+#include "stm32_libs/stm32f10x/stm32f10x.h"
+#include "stm32_libs/stm32f10x/boctok/stm32f10x_gpio_boctok.h"
+#include "stm32_libs/boctok_types.h"
 
 #include "crank_simulator.h"
 #include "debug.h"
-
-
-
-/**
-strange behavior:
-crank signal generation works properly while/after debug session,
-after a system reset it works 69x faster
-
-but sometimes it works after reset
-
-*/
-
-
 
 volatile crank_simulator_t Crank_simulator;
 
@@ -57,9 +44,6 @@ void start_crank_simulation()
 
     //load output compare value for the first pattern
     Segment_buffer= Crank_simulator.crank_timer_segments[0];
-    //DEBUG
-    //Segment_buffer= 100;
-
     Crank_simulator.crank_timer_segments[0] =0;
 
     if(Segment_buffer > 0)
@@ -70,6 +54,9 @@ void start_crank_simulation()
         //set new timer compare value
         TIM2->CCR1= (U16) Segment_buffer;
 
+        //generate update event to write new prescaler and compare value
+        TIM2->EGR = TIM_EGR_UG;
+
         //crank signal first pattern start with high level
         set_crank_pin(ON);
 
@@ -78,12 +65,6 @@ void start_crank_simulation()
 
         //start timer counter
         TIM2->CR1 |= TIM_CR1_CEN;
-
-        /**
-        it has been shown that enabling the timer fires up the irq flags in SR (0x40000010 := 0x1f)
-        so clear the flags!!!
-        */
-        TIM2->SR= (U16) 0;
     }
     else
     {
@@ -160,9 +141,12 @@ void TIM2_IRQHandler(void)
     VU32 Segment_buffer;
 
     //compare event
-    if( TIM2->SR & TIM_IT_CC1)
+    if( TIM2->SR & TIM_SR_CC1IF)
     {
-        TIM2->SR = (U16) ~TIM_IT_CC1;
+        TIM2->SR= (U16) ~TIM_SR_CC1IF;
+
+        //apply new simulator pin level
+        set_crank_pin(TOGGLE);
 
         //crank pattern segment duration expired -> new engine position reached
         Crank_simulator.crank_position++;
@@ -182,8 +166,6 @@ void TIM2_IRQHandler(void)
         fresh timer segments should have been generated after last segment load
         */
         Segment_buffer=Crank_simulator.crank_timer_segments[Crank_simulator.crank_position];
-        //DEBUG
-        //Segment_buffer= 4938;
 
         if(Segment_buffer > 0)
         {
@@ -193,13 +175,10 @@ void TIM2_IRQHandler(void)
             //set new timer compare value
             TIM2->CCR1= (U16) Segment_buffer;
 
-            //reset timer
-            TIM2->CNT= (U16) 0;
+            //generate update event to write new prescaler and compare value
+            TIM2->EGR = TIM_EGR_UG;
 
-            //delete flags
-            TIM2->SR= (U16) 0;
-
-            //mask compare irq
+            //unmask compare irq
             TIM2->DIER |= TIM_DIER_CC1IE;
 
             //delete old value
@@ -210,9 +189,6 @@ void TIM2_IRQHandler(void)
             {
                 EXTI->SWIER= EXTI_SWIER_SWIER2;
             }
-
-            //apply new simulator pin level
-            set_crank_pin(TOGGLE);
 
         }
         else
