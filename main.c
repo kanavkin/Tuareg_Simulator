@@ -254,9 +254,18 @@ or crank simulator error occurred!
  ******************************************************************************************************************************/
 void EXTI2_IRQHandler(void)
 {
+    VU32 rpm;
+
     //clear pending register
     EXTI->PR= EXTI_Line2;
 
+    //get new rpm from waveform
+    rpm= update_crank_generator(Debug_rpm);
+
+    //save new rpm
+    Debug_rpm= rpm;
+
+    //provision to simulator
     calc_crank_timing(Debug_rpm);
 
     //set_debug_led(TOGGLE);

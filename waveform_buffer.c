@@ -49,7 +49,7 @@ calling function shall observe parameter range!
 void waveform_add(waveform_type_t Type, S32 Increment, U32 Length)
 {
     //append to current waveform, as long it has not been started yet and it fits to buffer
-    if((Type == CRANK_WAVEFORM) && (Waveform_Generator.crank_waveform_rdpointer == 0) && (Waveform_Generator.crank_waveform_length < CRANK_WAVEFORM_BUFFER_LENGTH -1))
+    if((Type == CRANK_WAVEFORM) && (Waveform_Generator.crank_generator_state == GENERATOR_OFF) && (Waveform_Generator.crank_waveform_length < CRANK_WAVEFORM_BUFFER_LENGTH -1))
     {
         Crank_waveform_buffer[Waveform_Generator.crank_waveform_length].increment= Increment;
         Crank_waveform_buffer[Waveform_Generator.crank_waveform_length].length= Length;
@@ -98,59 +98,86 @@ U32 waveform_get(waveform_type_t Type, volatile waveform_t * Target_waveform)
 }
 
 
-//returns the new rpm to be simulated
-U32 update_crank_generator(U32 Start_rpm)
+/**
+returns the new rpm to be simulated in the current engine cycle
+returns 0 if not running
+*/
+U32 update_crank_generator(U32 Rpm)
 {
-    volatile waveform_t waveform;
-    VU32 result;
+    VS32 target;
 
     //continue simulation if already running
-    if(Waveform_Generator.crank_generator_state == GENERATOR_ON)
+    if(Waveform_Generator.crank_generator_state != GENERATOR_ON)
     {
-        //is the current waveform segment valid
+        return 0;
+    }
 
+    /**
+    try to calculate the new rpm from the current waveform segment (when length > 0) or
+    switch over to the next segment if possible
+    */
 
+    if(Crank_waveform_buffer[Waveform_Generator.crank_waveform_rdpointer].length == 0)
+    {
+        //segment has expired -> try to get the next segment
 
-
-        //try to get new waveform segment
-        if( waveform_get(CRANK_WAVEFORM, &waveform))
+        //we can get a new segment if we are at the предпоследный segment
+        if(Waveform_Generator.crank_waveform_rdpointer < Waveform_Generator.crank_waveform_length -1)
         {
-
+            //proceed to the next segment
+            Waveform_Generator.crank_waveform_rdpointer++;
         }
         else
         {
-            //no new waveform segment available
+            //end of waveform
             Waveform_Generator.crank_generator_state= GENERATOR_OFF;
+
+            return 0;
         }
+    }
+
+    /**
+    now we know that our waveform segment is active
+    */
+
+    //remaining length shortened
+    Crank_waveform_buffer[Waveform_Generator.crank_waveform_rdpointer].length--;
 
 
+    //current waveform segment active
+    target= Rpm + Crank_waveform_buffer[Waveform_Generator.crank_waveform_rdpointer].increment;
 
-
-
+    //clamp rpm to positive values
+    if(target < 0)
+    {
+        return 0;
     }
     else
     {
-        //start new run
-
-
-
-
-
-
-
-        Waveform_Generator.crank_generator_state= GENERATOR_ON;
+        return (U32) target;
     }
 
+}
 
 
 
-
-
-
-
-
-
-
+/**
+returns the starting rpm if successful
+return 0 if no data
+*/
+U32 start_crank_waveform_generator(U32 StartRpm)
+{
+    //if we have segments in buffer -> turn generator on
+    if((Waveform_Generator.crank_generator_state != GENERATOR_ON) && (Waveform_Generator.crank_waveform_rdpointer < Waveform_Generator.crank_waveform_length))
+    {
+        Waveform_Generator.crank_generator_state= GENERATOR_ON;
+        return StartRpm;
+    }
+    else
+    {
+        Waveform_Generator.crank_generator_state= GENERATOR_OFF;
+        return 0;
+    }
 }
 
 
