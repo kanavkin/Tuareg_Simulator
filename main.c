@@ -41,7 +41,7 @@ adjust linker script (compiler options)
 volatile Tuareg_simulator_t Tuareg_simulator;
 
 
-VU32 Debug_rpm= 1350;
+VU32 Crank_rpm= 1350;
 
 /**
 Tuareg IRQ priorities:
@@ -94,63 +94,11 @@ how to use platform ressources:
 */
 
 
-void set_engine_type(engine_type_t new_engine)
-{
-    if(new_engine == XTZ750)
-    {
-        //set up crank pattern
-        Tuareg_simulator.crank_simulator->crank_segments[0]= 40;
-        Tuareg_simulator.crank_simulator->crank_segments[1]= 50;
-
-        Tuareg_simulator.crank_simulator->crank_segments[2]= 8;
-        Tuareg_simulator.crank_simulator->crank_segments[3]= 82;
-
-        Tuareg_simulator.crank_simulator->crank_segments[4]= 8;
-        Tuareg_simulator.crank_simulator->crank_segments[5]= 82;
-
-        Tuareg_simulator.crank_simulator->crank_segments[6]= 8;
-        Tuareg_simulator.crank_simulator->crank_segments[7]= 82;
-
-        //set up crank pattern length
-        Tuareg_simulator.crank_simulator->crank_pattern_len= 8;
-    }
-    else if(new_engine == XTZ660)
-    {
-        //set up crank pattern
-        Tuareg_simulator.crank_simulator->crank_segments[0]= 40;
-        Tuareg_simulator.crank_simulator->crank_segments[1]= 50;
-
-        Tuareg_simulator.crank_simulator->crank_segments[2]= 10;
-        Tuareg_simulator.crank_simulator->crank_segments[3]= 80;
-
-        Tuareg_simulator.crank_simulator->crank_segments[4]= 5;
-        Tuareg_simulator.crank_simulator->crank_segments[5]= 85;
-
-        Tuareg_simulator.crank_simulator->crank_segments[6]= 5;
-        Tuareg_simulator.crank_simulator->crank_segments[7]= 85;
-
-        //set up crank pattern length
-        Tuareg_simulator.crank_simulator->crank_pattern_len= 8;
-    }
-
-
-    /*
-    TODO
-    set up cam timing
-    */
-
-}
 
 
 
-void calc_crank_timing(VU32 Engine_rpm)
-{
-    for(VU8 segment=0; segment < (Tuareg_simulator.crank_simulator->crank_pattern_len); segment++)
-    {
-        //t (in us) := 166667 * d (in °) / n (in rpm)
-        Tuareg_simulator.crank_simulator->crank_timer_segments[segment]= Tuareg_simulator.crank_simulator->crank_segments[segment] * 166667UL / Engine_rpm;
-    }
-}
+
+
 
 
 
@@ -204,9 +152,7 @@ int main(void)
 
     //set up crank simulation
     set_engine_type(XTZ750);
-
-    calc_crank_timing(Debug_rpm);
-    start_crank_simulation();
+    start_crank_simulation(1350);
 
 
     while(1)
@@ -248,8 +194,7 @@ int main(void)
 
 
 /******************************************************************************************************************************
-sw generated irq when crank simulator has updated crank_position
-or crank simulator error occurred!
+sw generated irq when crank simulator has completed a crank cycle (360°)
 -> new crank timing required
  ******************************************************************************************************************************/
 void EXTI2_IRQHandler(void)
@@ -259,14 +204,23 @@ void EXTI2_IRQHandler(void)
     //clear pending register
     EXTI->PR= EXTI_Line2;
 
-    //get new rpm from waveform
-    rpm= update_crank_generator(Debug_rpm);
+    /**
+    get a new rpm according to simulator mode
+    STOP -> no rpm
+    WAVEFORM-> from buffer
+    CONT -> no rpm change
+    */
+    if(Tuareg_simulator.crank_simulator_mode == SMODE_STOP)
+    {
+        Tuareg_simulator.crank_simulator->rpm =0;
+    }
+    else if(Tuareg_simulator.crank_simulator_mode == SMODE_WAVEFORM)
+    {
+        Tuareg_simulator.crank_simulator->rpm= update_crank_generator(Tuareg_simulator.crank_simulator->rpm);
+    }
 
-    //save new rpm
-    Debug_rpm= rpm;
-
-    //provision to simulator
-    calc_crank_timing(Debug_rpm);
+    //calculate timer segment duration from rpm and provide to simulator
+    calc_crank_timing();
 
     //set_debug_led(TOGGLE);
 }

@@ -30,9 +30,84 @@ void set_cam_pin(output_pin_t level)
 
 
 /**
-use 16 bit TIM2 for crank pickup signal simulation
+helper function to calculate the timer segments from simulator rpm
 */
-void start_crank_simulation()
+void calc_crank_timing()
+{
+    if(Crank_simulator.rpm > 0)
+    {
+        for(VU8 segment=0; segment < (Crank_simulator.crank_pattern_len); segment++)
+        {
+            //t (in us) := 166667 * d (in °) / n (in rpm)
+            Crank_simulator.crank_timer_segments[segment]= Crank_simulator.crank_segments[segment] * 166667UL / Crank_simulator.rpm;
+        }
+    }
+    else
+    {
+        for(VU8 segment=0; segment < (Crank_simulator.crank_pattern_len); segment++)
+        {
+            //empty
+            Crank_simulator.crank_timer_segments[segment]= 0;
+        }
+    }
+}
+
+
+
+void set_engine_type(engine_type_t new_engine)
+{
+    if(new_engine == XTZ750)
+    {
+        //set up crank pattern
+        Crank_simulator.crank_segments[0]= 40;
+        Crank_simulator.crank_segments[1]= 50;
+
+        Crank_simulator.crank_segments[2]= 8;
+        Crank_simulator.crank_segments[3]= 82;
+
+        Crank_simulator.crank_segments[4]= 8;
+        Crank_simulator.crank_segments[5]= 82;
+
+        Crank_simulator.crank_segments[6]= 8;
+        Crank_simulator.crank_segments[7]= 82;
+
+        //set up crank pattern length
+        Crank_simulator.crank_pattern_len= 8;
+    }
+    else if(new_engine == XTZ660)
+    {
+        //set up crank pattern
+        Crank_simulator.crank_segments[0]= 40;
+        Crank_simulator.crank_segments[1]= 50;
+
+        Crank_simulator.crank_segments[2]= 10;
+        Crank_simulator.crank_segments[3]= 80;
+
+        Crank_simulator.crank_segments[4]= 5;
+        Crank_simulator.crank_segments[5]= 85;
+
+        Crank_simulator.crank_segments[6]= 5;
+        Crank_simulator.crank_segments[7]= 85;
+
+        //set up crank pattern length
+        Crank_simulator.crank_pattern_len= 8;
+    }
+
+
+    /*
+    TODO
+    set up cam timing
+    */
+
+}
+
+
+
+/**
+use 16 bit TIM2 for crank pickup signal simulation
+precondition: fill crank_timer_segments[] -> run calc_crank_timing()
+*/
+void start_crank_simulation(VU32 Init_rpm)
 {
     VU32 Segment_buffer;
 
@@ -41,6 +116,19 @@ void start_crank_simulation()
 
     //first revolution
     Crank_simulator.crank_turns =0;
+
+    //clamp rpm range
+    if((Init_rpm > 0) && (Init_rpm <= CRANK_MAX_RPM))
+    {
+        Crank_simulator.rpm= Init_rpm;
+    }
+    else
+    {
+        Crank_simulator.rpm =0;
+    }
+
+    //calculate timer segments
+    calc_crank_timing();
 
     //load output compare value for the first pattern
     Segment_buffer= Crank_simulator.crank_timer_segments[0];
@@ -85,9 +173,7 @@ void stop_crank_simulation()
     //reset variables
     Crank_simulator.crank_position =0;
     Crank_simulator.crank_turns =0;
-
-    //trigger the sw irq 2 for error indication
-    EXTI->SWIER= EXTI_SWIER_SWIER2;
+    Crank_simulator.rpm =0;
 }
 
 
@@ -184,7 +270,10 @@ void TIM2_IRQHandler(void)
             //delete old value
             Crank_simulator.crank_timer_segments[Crank_simulator.crank_position] =0;
 
-            //trigger the sw irq 2 for timing recalculation, when the last segment has been loaded
+            /**
+            trigger sw irq 2 when loading last segment -> timing recalculation
+            (this will fill crank_timer_segments[] with new values)
+            */
             if(Crank_simulator.crank_position == (Crank_simulator.crank_pattern_len -1))
             {
                 EXTI->SWIER= EXTI_SWIER_SWIER2;
@@ -193,7 +282,9 @@ void TIM2_IRQHandler(void)
         }
         else
         {
-            //error -> shut down crank simulator (triggers sw irq)
+            /**
+            empty crank_timer_segments -> shut down crank simulator (triggers sw irq)
+            */
             stop_crank_simulation();
         }
 

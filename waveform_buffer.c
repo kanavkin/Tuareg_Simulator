@@ -21,8 +21,6 @@ void reset_waveform_buffer(waveform_type_t Type)
 
         Waveform_Generator.crank_waveform_length =0;
         Waveform_Generator.crank_waveform_rdpointer =0;
-        Waveform_Generator.crank_generator_state= GENERATOR_OFF;
-
     }
     else
     {
@@ -46,21 +44,38 @@ void reset_waveform_buffer(waveform_type_t Type)
 /**
 calling function shall observe parameter range!
 */
-void waveform_add(waveform_type_t Type, S32 Increment, U32 Length)
+U32 waveform_add(waveform_type_t Type, S32 Increment, U32 Length)
 {
     //append to current waveform, as long it has not been started yet and it fits to buffer
-    if((Type == CRANK_WAVEFORM) && (Waveform_Generator.crank_generator_state == GENERATOR_OFF) && (Waveform_Generator.crank_waveform_length < CRANK_WAVEFORM_BUFFER_LENGTH -1))
+    if(Type == CRANK_WAVEFORM)
     {
-        Crank_waveform_buffer[Waveform_Generator.crank_waveform_length].increment= Increment;
-        Crank_waveform_buffer[Waveform_Generator.crank_waveform_length].length= Length;
-        Waveform_Generator.crank_waveform_length++;
+        if(Waveform_Generator.crank_waveform_length < CRANK_WAVEFORM_BUFFER_LENGTH -1)
+        {
+            Crank_waveform_buffer[Waveform_Generator.crank_waveform_length].increment= Increment;
+            Crank_waveform_buffer[Waveform_Generator.crank_waveform_length].length= Length;
+            Waveform_Generator.crank_waveform_length++;
+            return 0;
+        }
+        else
+        {
+            return 1;
+        }
     }
-    else if((Type == SENSOR_WAVEFORM) && (Waveform_Generator.sensor_waveform_rdpointer == 0) && (Waveform_Generator.sensor_waveform_length < SENSOR_WAVEFORM_BUFFER_LENGTH -1))
+    else if(Type == SENSOR_WAVEFORM)
     {
-        Sensors_waveform_buffer[Waveform_Generator.sensor_waveform_length].increment= Increment;
-        Sensors_waveform_buffer[Waveform_Generator.sensor_waveform_length].length= Length;
-        Waveform_Generator.sensor_waveform_length++;
+        if((Waveform_Generator.sensor_waveform_rdpointer == 0) && (Waveform_Generator.sensor_waveform_length < SENSOR_WAVEFORM_BUFFER_LENGTH -1))
+        {
+            Sensors_waveform_buffer[Waveform_Generator.sensor_waveform_length].increment= Increment;
+            Sensors_waveform_buffer[Waveform_Generator.sensor_waveform_length].length= Length;
+            Waveform_Generator.sensor_waveform_length++;
+            return 0;
+        }
+        else
+        {
+            return 1;
+        }
     }
+    else return 2;
 
 }
 
@@ -106,11 +121,7 @@ U32 update_crank_generator(U32 Rpm)
 {
     VS32 target;
 
-    //continue simulation if already running
-    if(Waveform_Generator.crank_generator_state != GENERATOR_ON)
-    {
-        return 0;
-    }
+
 
     /**
     try to calculate the new rpm from the current waveform segment (when length > 0) or
@@ -130,6 +141,7 @@ U32 update_crank_generator(U32 Rpm)
         else
         {
             //end of waveform
+            //TODO: how to tell the management that the waveform has expired when we have no generator_state???
             Waveform_Generator.crank_generator_state= GENERATOR_OFF;
 
             return 0;
@@ -170,6 +182,7 @@ U32 start_crank_waveform_generator(U32 StartRpm)
     //if we have segments in buffer -> turn generator on
     if((Waveform_Generator.crank_generator_state != GENERATOR_ON) && (Waveform_Generator.crank_waveform_rdpointer < Waveform_Generator.crank_waveform_length))
     {
+
         Waveform_Generator.crank_generator_state= GENERATOR_ON;
         return StartRpm;
     }

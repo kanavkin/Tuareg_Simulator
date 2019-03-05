@@ -12,14 +12,22 @@ when to enable cylinder identification sensor irq
 
 
 #define CRANK_PATTERN_MAXLEN 20
+#define CRANK_MAX_RPM 9500
 
 
+typedef enum {
 
+    XTZ660 =1,
+    XTZ750 =2
 
+} engine_type_t;
 
 
 
 typedef struct _crank_simulator_t {
+
+//simulated rpm
+VU32 rpm;
 
 //the numbers of crank shaft revolutions done
 VU32 crank_turns;
@@ -48,9 +56,9 @@ VU8 cam_duration;
 } crank_simulator_t;
 
 
-
-
-void start_crank_simulation();
+void set_engine_type(engine_type_t new_engine);
+void calc_crank_timing();
+void start_crank_simulation(VU32 Init_rpm);
 void stop_crank_simulation();
 volatile crank_simulator_t * init_crank_simulation();
 

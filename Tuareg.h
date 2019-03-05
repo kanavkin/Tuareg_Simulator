@@ -87,32 +87,11 @@ for the currentStatus
 
 typedef enum {
 
-    TMODE_INIT,
+    SMODE_STOP,
+    SMODE_CONT,
+    SMODE_WAVEFORM
 
-    TMODE_LOWLEVEL      =0x00,
-    TMODE_CONFIGLOAD    =0x01,
-    TMODE_HWINIT        =0x02,
-    TMODE_MIGRATION     =0x03,
-
-    TMODE_LIMP          =0x30,
-    TMODE_DIAG          =0x40,
-
-
-    TMODE_CRASH         =0x50,
-    TMODE_EMERGENCY     =0x51,
-
-    TMODE_KILLED        =0xF0,
-
-    TMODE_RUN,
-
-    TMODE_STALLED,
-    TMODE_CRANKING,
-    TMODE_PERFORMING,
-    TMODE_RUNNING           =0xFF,
-    TMODE_WARMUP,
-    TMODE_PRIMING
-
-} tuareg_runmode_t;
+} simulator_mode_t;
 
 
 
@@ -123,18 +102,12 @@ typedef enum {
 } tuareg_error_t;
 
 
-typedef enum {
 
-    XTZ660 =1,
-    XTZ750 =2
-
-} engine_type_t;
 
 
 
 /**
-The status struct contains the current values for all 'live' variables
-In current version this is 64 bytes
+T
 */
 typedef struct _Tuareg_simulator_t {
 
@@ -142,25 +115,11 @@ typedef struct _Tuareg_simulator_t {
     access to core components
     */
     volatile crank_simulator_t * crank_simulator;
-    volatile sensor_interface_t * sensor_interface;
-
-
-    //statemachine and health status
-    tuareg_runmode_t Runmode;
-    tuareg_error_t Errors;
-
-    //sidestand, crash and run switch counter
-    U8 run_switch_counter;
-    U8 crash_switch_counter;
+    //volatile sensor_interface_t * sensor_interface;
 
     volatile engine_type_t simulated_engine;
 
-
-
-
-VU32 current_rpm;
-
-
+    volatile simulator_mode_t crank_simulator_mode;
 
 
 } Tuareg_simulator_t;
