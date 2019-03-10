@@ -30,12 +30,15 @@ void set_cam_pin(output_pin_t level)
 
 
 /**
-helper function to calculate the timer segments from simulator rpm
+helper function
+stores the given rpm value to simulator and calculate the timer segments
 */
-void calc_crank_timing()
+void set_crank_rpm(U32 Rpm)
 {
-    if(Crank_simulator.rpm > 0)
+    if((Rpm > 0) && (Rpm < CRANK_MAX_RPM))
     {
+        Crank_simulator.rpm= Rpm;
+
         for(VU8 segment=0; segment < (Crank_simulator.crank_pattern_len); segment++)
         {
             //t (in us) := 166667 * d (in °) / n (in rpm)
@@ -44,12 +47,40 @@ void calc_crank_timing()
     }
     else
     {
+        Crank_simulator.rpm =0;
+
         for(VU8 segment=0; segment < (Crank_simulator.crank_pattern_len); segment++)
         {
             //empty
             Crank_simulator.crank_timer_segments[segment]= 0;
         }
     }
+}
+
+
+
+/**
+helper function
+stores the given rpm value to simulator and calculate the timer segments
+*/
+void recalc_timer_segments()
+{
+    for(VU8 segment=0; segment < (Crank_simulator.crank_pattern_len); segment++)
+    {
+        //t (in us) := 166667 * d (in °) / n (in rpm)
+        Crank_simulator.crank_timer_segments[segment]= Crank_simulator.crank_segments[segment] * 166667UL / Crank_simulator.rpm;
+    }
+}
+
+
+
+/**
+helper function
+returns the current simulator rpm
+*/
+U32 get_simulator_rpm()
+{
+    return Crank_simulator.rpm;
 }
 
 
@@ -107,7 +138,7 @@ void set_engine_type(engine_type_t new_engine)
 use 16 bit TIM2 for crank pickup signal simulation
 precondition: fill crank_timer_segments[] -> run calc_crank_timing()
 */
-void start_crank_simulation(VU32 Init_rpm)
+void start_crank_simulation(U32 Init_rpm)
 {
     VU32 Segment_buffer;
 
@@ -117,18 +148,8 @@ void start_crank_simulation(VU32 Init_rpm)
     //first revolution
     Crank_simulator.crank_turns =0;
 
-    //clamp rpm range
-    if((Init_rpm > 0) && (Init_rpm <= CRANK_MAX_RPM))
-    {
-        Crank_simulator.rpm= Init_rpm;
-    }
-    else
-    {
-        Crank_simulator.rpm =0;
-    }
-
-    //calculate timer segments
-    calc_crank_timing();
+    //already clamping rpm range in set_crank_rpm()
+    set_crank_rpm(Init_rpm);
 
     //load output compare value for the first pattern
     Segment_buffer= Crank_simulator.crank_timer_segments[0];
@@ -153,6 +174,7 @@ void start_crank_simulation(VU32 Init_rpm)
 
         //start timer counter
         TIM2->CR1 |= TIM_CR1_CEN;
+
     }
     else
     {

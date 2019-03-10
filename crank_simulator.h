@@ -48,17 +48,14 @@ VU8 cam_on_angle;
 VU8 cam_duration;
 
 
-
-
-
-
-
 } crank_simulator_t;
 
 
 void set_engine_type(engine_type_t new_engine);
-void calc_crank_timing();
-void start_crank_simulation(VU32 Init_rpm);
+void set_crank_rpm(U32 Rpm);
+void recalc_timer_segments();
+U32 get_simulator_rpm();
+void start_crank_simulation(U32 Init_rpm);
 void stop_crank_simulation();
 volatile crank_simulator_t * init_crank_simulation();
 

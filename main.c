@@ -138,22 +138,26 @@ int main(void)
     /**
     initialize core components and register interface access pointers
     */
-    //Tuareg.sensor_interface= init_sensors();
-    Tuareg_simulator.crank_simulator= init_crank_simulation();
-    //Tuareg.ignition_timing= &ignition_timing;
-    //init_ignition(&Tuareg.ignition_timing);
-    //init_scheduler();
+    Tuareg_simulator.pCrank_simulator= init_crank_simulation();
     init_lowspeed_timers();
 
-
     //init waveforms
-    waveform_add(CRANK_WAVEFORM, 2, 1000);
-
-
-    //set up crank simulation
     set_engine_type(XTZ750);
+
+    reset_waveform_buffer(CRANK_WAVEFORM);
+
+    waveform_add(CRANK_WAVEFORM, 50, 3);
+    waveform_add(CRANK_WAVEFORM, 100, 3);
+    waveform_add(CRANK_WAVEFORM, 60, 3);
+
+    Tuareg_simulator.crank_simulator_mode= SMODE_WAVEFORM;
+    start_crank_waveform_generator();
     start_crank_simulation(1350);
 
+    /*
+    Tuareg_simulator.crank_simulator_mode= SMODE_CONT;
+    start_crank_simulation(1350);
+    */
 
     while(1)
     {
@@ -199,45 +203,66 @@ sw generated irq when crank simulator has completed a crank cycle (360°)
  ******************************************************************************************************************************/
 void EXTI2_IRQHandler(void)
 {
-    VU32 rpm;
+    VU32 rpmBuffer;
 
     //clear pending register
     EXTI->PR= EXTI_Line2;
 
     /**
-    get a new rpm according to simulator mode
-    STOP -> no rpm
-    WAVEFORM-> from buffer
-    CONT -> no rpm change
+    choose a new rpm according to simulator mode
     */
-    if(Tuareg_simulator.crank_simulator_mode == SMODE_STOP)
+    switch(Tuareg_simulator.crank_simulator_mode)
     {
-        Tuareg_simulator.crank_simulator->rpm =0;
-    }
-    else if(Tuareg_simulator.crank_simulator_mode == SMODE_WAVEFORM)
-    {
-        Tuareg_simulator.crank_simulator->rpm= update_crank_generator(Tuareg_simulator.crank_simulator->rpm);
+        case SMODE_STOP:
+
+            stop_crank_simulation();
+            break;
+
+        case SMODE_WAVEFORM:
+
+            //get current rpm
+            rpmBuffer= get_simulator_rpm();
+
+            //try to fetch the next waveform segment
+            if(update_crank_generator(&rpmBuffer))
+            {
+                //empty buffer or generator shut off
+                Tuareg_simulator.crank_simulator_mode= SMODE_STOP;
+                stop_crank_simulation();
+            }
+            else
+            {
+                //success
+                set_crank_rpm(rpmBuffer);
+            }
+            break;
+
+        case SMODE_CONT:
+
+            //keep current rpm
+            recalc_timer_segments();
+            break;
+
+
+        default:
+
+            //error, no such mode!
+            stop_crank_simulation();
     }
 
-    //calculate timer segment duration from rpm and provide to simulator
-    calc_crank_timing();
+
 
     //set_debug_led(TOGGLE);
 }
 
 /******************************************************************************************************************************
-sw generated irq when spark has fired
--> recalculate ignition timing
+sw generated irq
  ******************************************************************************************************************************/
 void EXTI3_IRQHandler(void)
 {
     //clear pending register
     EXTI->PR= EXTI_Line3;
 
-    /**
-    recalculate ignition timing
-    */
-//    calc_ignition_timings(&Tuareg.ignition_timing);
 
 
 
