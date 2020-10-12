@@ -11,7 +11,7 @@ A full copy of the license may be found in the projects root directory
 #include "Tuareg.h"
 #include "sensors.h"
 
-#include "TunerStudio.h"
+#include "comm.h"
 
 VU32 loop20ms;
 VU32 loop33ms;
@@ -91,6 +91,13 @@ void SysTick_Handler(void)
     {
         loopSec = 0;
         ls_timer |= BIT_TIMER_1HZ;
+
+
+        //keep tunerstudio from freezing
+        if(TS_cli.command_duration)
+        {
+            TS_cli.command_duration--;
+        }
     }
 
     /**

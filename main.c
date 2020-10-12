@@ -27,7 +27,7 @@ adjust linker script (compiler options)
 #include "uart.h"
 #include "conversion.h"
 #include "lowspeed_timers.h"
-#include "TunerStudio.h"
+#include "comm.h"
 #include "config.h"
 #include "table.h"
 #include "eeprom.h"
@@ -41,68 +41,15 @@ adjust linker script (compiler options)
 volatile Tuareg_simulator_t Tuareg_simulator;
 
 
-VU32 Crank_rpm= 1350;
 
 /**
-Tuareg IRQ priorities:
-
-1    decoder:
-    crank pickup (EXTI) -> EXTI0_IRQn
-    crank pickup filter (timer 2) -> TIM2_IRQn
-
-2   scheduler (timer 3) -> TIM3_IRQn
-
-3   cis (part of decoder) (EXTI) -> EXTI1_IRQn
-
-4   decoder (sw EXTI) -> EXTI2_IRQn
-
-5   lowspeed timer (systick) -> SysTick_IRQn
-
-6   ADC injected conversion complete -> ADC1_2_IRQn
-
-7   ADC conversion complete (DMA transfer) -> DMA1_Channel1_IRQn
-
-10  ignition timing recalculation (sw EXTI) -> EXTI3_IRQn
-
-14  tunerstudio (usart 1) -> USART1_IRQn
-
-15  debug com  (usart 3) -> USART3_IRQn
-
-*/
-
-/**
-Tuareg EXTI ressources:
-
-EXTI0:  PORTB0  --> crank pickup signal
-
-EXTI1:
-
-EXTI2:  -sw-    --> decoder int
-
-EXTI3:  -sw-    --> ignition irq
-
-EXTI4: ?
-
-*/
-
-
-/**
-how to use platform ressources:
+bluepill config:
+RAM 20k
+FLASH 64k
 
 
 
 */
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -114,36 +61,22 @@ int main(void)
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 
     UART1_Init();
-    UART3_Init();
 
-    UART_Send(DEBUG_PORT, "\r \n \r \n . \r \n . \r \n . \r \n \r \n *** This is Tuareg-Simulator *** \r \n");
-    UART_Send(DEBUG_PORT, "RC 0001");
-
-    /*
-    TODO
-    UART_Send(DEBUG_PORT, "\r \n config: \r \n");
-    UART_Send(DEBUG_PORT, "XTZ 660 digital crank signal on GPIOD-0 \r \n");
-    UART_Send(DEBUG_PORT, "-GPIOD-0 is A1 on Nucleo-F103RB- \r \n");
-    UART_Send(DEBUG_PORT, "\r \n XTZ 660 ignition coil signal on GPIOB-0 \r \n");
-    UART_Send(DEBUG_PORT, "-GPIOB-0 is A3 on Nucleo-F103RB- \r \n \r \n");
-    */
-
-    /*
-    TODO
-    DEBUG
-    UART_Send(DEBUG_PORT, "TunerStudio interface ready \r\n");
-    */
-
+    UART_Send(TS_PORT, "\r\n\r\n.\r\n.\r\n.\r\n\r\n*** This is Tuareg-Simulator *** \r\n");
+    UART_Send(TS_PORT, "\r\nRC 0001");
+    UART_Send(TS_PORT, "\r\nconfig:");
+    UART_Send(TS_PORT, "\r\ncrank signal on PORTB 10\r\n\r\n");
 
     /**
     initialize core components and register interface access pointers
     */
-    Tuareg_simulator.pCrank_simulator= init_crank_simulation();
+    Tuareg_simulator.pCrank_simulator= init_crank_simulator();
     init_lowspeed_timers();
 
     //init waveforms
     set_engine_type(XTZ750);
 
+    /*
     reset_waveform_buffer(CRANK_WAVEFORM);
 
     waveform_add(CRANK_WAVEFORM, 50, 3);
@@ -152,12 +85,12 @@ int main(void)
 
     Tuareg_simulator.crank_simulator_mode= SMODE_WAVEFORM;
     start_crank_waveform_generator();
-    start_crank_simulation(1350);
 
-    /*
-    Tuareg_simulator.crank_simulator_mode= SMODE_CONT;
     start_crank_simulation(1350);
     */
+
+    //default action
+    set_sweep_mode();
 
     while(1)
     {
@@ -170,24 +103,18 @@ int main(void)
 
         }
 
-
-
         /**
         handle TS communication
         */
-        /*
         if( (ls_timer & BIT_TIMER_10HZ) || (UART_available() > SERIAL_BUFFER_THRESHOLD) )
         {
             ls_timer &= ~BIT_TIMER_10HZ;
 
 
+            comm_periodic();
 
-            if (UART_available() > 0)
-            {
-               // ts_communication();
-            }
         }
-        */
+
     }
 
     return 0;
@@ -221,7 +148,7 @@ void EXTI2_IRQHandler(void)
         case SMODE_WAVEFORM:
 
             //get current rpm
-            rpmBuffer= get_simulator_rpm();
+            rpmBuffer= Tuareg_simulator.pCrank_simulator->rpm;
 
             //try to fetch the next waveform segment
             if(update_crank_generator(&rpmBuffer))
@@ -239,8 +166,44 @@ void EXTI2_IRQHandler(void)
 
         case SMODE_CONT:
 
+            set_crank_rpm(Tuareg_simulator.pCrank_simulator->cont_rpm);
+
             //keep current rpm
-            recalc_timer_segments();
+            calc_timer_segments();
+            break;
+
+        case SMODE_SWEEP:
+
+            if(Tuareg_simulator.pCrank_simulator->sweep_counter >= Tuareg_simulator.pCrank_simulator->sweep_hold )
+            {
+                Tuareg_simulator.pCrank_simulator->sweep_counter =0;
+
+                rpmBuffer= Tuareg_simulator.pCrank_simulator->rpm + Tuareg_simulator.pCrank_simulator->sweep_increment;
+
+                if(rpmBuffer <= Tuareg_simulator.pCrank_simulator->sweep_end)
+                {
+                    //increase rpm
+                    set_crank_rpm(rpmBuffer);
+                }
+
+                    //or end -> keep current rpm
+
+                calc_timer_segments();
+
+                UART_Send(TS_PORT, "\rrpm: ");
+                UART_Print_U(TS_PORT, Tuareg_simulator.pCrank_simulator->rpm, TYPE_U16, NO_PAD );
+
+
+            }
+            else
+            {
+                Tuareg_simulator.pCrank_simulator->sweep_counter++;
+
+                //keep current rpm
+                calc_timer_segments();
+            }
+
+
             break;
 
 

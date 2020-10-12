@@ -13,6 +13,7 @@
 				<Option compiler="gnu_gcc_compiler_for_stm32" />
 				<Compiler>
 					<Add option="-mcpu=cortex-m3" />
+					<Add option="-g3" />
 					<Add option="-g" />
 				</Compiler>
 			</Target>
@@ -32,17 +33,17 @@
 		<Compiler>
 			<Add option="-mcpu=cortex-m3" />
 			<Add option="-mthumb" />
+			<Add option="-mno-thumb-interwork" />
 			<Add option="-fomit-frame-pointer" />
 			<Add option="-Wall" />
-			<Add option="-march=armv7-m -mfloat-abi=soft  -mcpu=cortex-m3" />
-			<Add option="-fno-common  -fno-builtin -ffreestanding  -Wall" />
+			<Add option="-march=armv7-m -mthumb -mfloat-abi=soft -ffreestanding  -Wall" />
 			<Add option="-ffunction-sections -fdata-sections -Wl,--gc-sections" />
-			<Add option="-DSTM32F10X_HD" />
+			<Add option="-DSTM32F10X_MD" />
 			<Add option="-DUSE_STDPERIPH_DRIVER" />
 		</Compiler>
 		<Linker>
-			<Add option="-Wl,--gc-sections -nostartfiles -T$(PROJECT_DIR)stm32_libs/stm32f10x/linker_scripts/stm32f10x_f512_r64.ld  -specs=nano.specs" />
-			<Add option="-I$(PROJECT_DIR)stm32_libs/stm32f10x/cmsis -I$(PROJECT_DIR)stm32_libs/stm32f10x/spl -I$(PROJECT_DIR)stm32_libs/stm32f10x/boctok" />
+			<Add option="-Wl,--gc-sections -nostartfiles -T$(PROJECT_DIR)stm32_libs/stm32f10x/linker_scripts/stm32f10x_f64_r20.ld  -specs=nano.specs" />
+			<Add option="-I$(PROJECT_DIR)stm32_libs/stm32f10x/cmsis -I$(PROJECT_DIR)stm32_libs/stm32f10x/spl -I$(PROJECT_DIR)stm32_libs/stm32f10x/boctok -mcpu=cortex-m4 -mthumb" />
 		</Linker>
 		<ExtraCommands>
 			<Add after="arm-none-eabi-size $(TARGET_OUTPUT_FILE)" />
@@ -53,7 +54,14 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="Tuareg.h" />
-		<Unit filename="TunerStudio.h" />
+		<Unit filename="base_calc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="base_calc.h" />
+		<Unit filename="comm.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="comm.h" />
 		<Unit filename="config.h" />
 		<Unit filename="config_pages.h" />
 		<Unit filename="conversion.c">
@@ -199,8 +207,9 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="stm32_libs/stm32f10x/spl/stm32f10x_wwdg.h" />
-		<Unit filename="stm32_libs/stm32f10x/startup_files/startup_stm32f10x_hd.s" />
+		<Unit filename="stm32_libs/stm32f10x/startup_files/startup_stm32f10x_md.s" />
 		<Unit filename="table.h" />
+		<Unit filename="trigger_wheel_layout.h" />
 		<Unit filename="types.h" />
 		<Unit filename="uart.c">
 			<Option compilerVar="CC" />

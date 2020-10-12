@@ -71,9 +71,6 @@ void UART1_Init()
     NVIC_SetPriority(USART1_IRQn, 14UL);
     NVIC_EnableIRQ(USART1_IRQn);
 
-
-
-
 	#ifdef SERIAL_MONITOR
     //monitor buffer
 	mrx_ptr =0;

@@ -12,14 +12,16 @@
 /**
 This is the maximum rpm that the simulator will run at
 */
-#define MAX_RPM 9000
+#define MAX_RPM 25000
+#define DEFAULT_RPM 1350
 
 
 typedef enum {
 
     SMODE_STOP,
     SMODE_CONT,
-    SMODE_WAVEFORM
+    SMODE_WAVEFORM,
+    SMODE_SWEEP
 
 } simulator_mode_t;
 
