@@ -276,6 +276,9 @@ void comm_periodic()
 
     case CMD_CONT_RPM:
 
+        /**
+        cont rpm can be commanded even when another simulation mode is active
+        */
         if(UART_available() >= COMMAND_NUM_LEN)
         {
             //get numeric part
@@ -287,7 +290,6 @@ void comm_periodic()
             //extract numeric part
             number= (num_in[0] - 0x30) * 10000 + (num_in[1] - 0x30) * 1000 + (num_in[2] - 0x30) * 100 + (num_in[3] - 0x30) * 10 + (num_in[4] - 0x30);
 
-            set_crank_rpm(number);
 
             if(number < MAX_RPM)
             {

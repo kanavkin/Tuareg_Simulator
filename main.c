@@ -76,18 +76,6 @@ int main(void)
     //init waveforms
     set_engine_type(XTZ750);
 
-    /*
-    reset_waveform_buffer(CRANK_WAVEFORM);
-
-    waveform_add(CRANK_WAVEFORM, 50, 3);
-    waveform_add(CRANK_WAVEFORM, 100, 3);
-    waveform_add(CRANK_WAVEFORM, 60, 3);
-
-    Tuareg_simulator.crank_simulator_mode= SMODE_WAVEFORM;
-    start_crank_waveform_generator();
-
-    start_crank_simulation(1350);
-    */
 
     //default action
     set_sweep_mode();
@@ -127,6 +115,8 @@ int main(void)
 /******************************************************************************************************************************
 sw generated irq when crank simulator has completed a crank cycle (360°)
 -> new crank timing required
+
+-> the simulator shall behave like a physical engine with a momentum -> rpm can not suddenly change
  ******************************************************************************************************************************/
 void EXTI2_IRQHandler(void)
 {
@@ -136,7 +126,7 @@ void EXTI2_IRQHandler(void)
     EXTI->PR= EXTI_Line2;
 
     /**
-    choose a new rpm according to simulator mode
+    choose a new rpm according to simulator mode and engine capabilities
     */
     switch(Tuareg_simulator.crank_simulator_mode)
     {
@@ -145,6 +135,7 @@ void EXTI2_IRQHandler(void)
             stop_crank_simulation();
             break;
 
+            /*
         case SMODE_WAVEFORM:
 
             //get current rpm
@@ -160,16 +151,16 @@ void EXTI2_IRQHandler(void)
             else
             {
                 //success
-                set_crank_rpm(rpmBuffer);
+                set_target_rpm(rpmBuffer);
             }
             break;
+            */
 
         case SMODE_CONT:
 
-            set_crank_rpm(Tuareg_simulator.pCrank_simulator->cont_rpm);
+            //a new cont simulation rpm could be commanded
+            set_target_rpm(Tuareg_simulator.pCrank_simulator->cont_rpm);
 
-            //keep current rpm
-            calc_timer_segments();
             break;
 
         case SMODE_SWEEP:
@@ -178,31 +169,21 @@ void EXTI2_IRQHandler(void)
             {
                 Tuareg_simulator.pCrank_simulator->sweep_counter =0;
 
-                rpmBuffer= Tuareg_simulator.pCrank_simulator->rpm + Tuareg_simulator.pCrank_simulator->sweep_increment;
+                //update target rpm
+                rpmBuffer= Tuareg_simulator.pCrank_simulator->target_rpm + Tuareg_simulator.pCrank_simulator->sweep_increment;
 
                 if(rpmBuffer <= Tuareg_simulator.pCrank_simulator->sweep_end)
                 {
                     //increase rpm
-                    set_crank_rpm(rpmBuffer);
+                    set_target_rpm(rpmBuffer);
                 }
 
-                    //or end -> keep current rpm
-
-                calc_timer_segments();
-
-                UART_Send(TS_PORT, "\rrpm: ");
-                UART_Print_U(TS_PORT, Tuareg_simulator.pCrank_simulator->rpm, TYPE_U16, NO_PAD );
-
-
             }
-            else
+            else if(Tuareg_simulator.pCrank_simulator->rpm == Tuareg_simulator.pCrank_simulator->target_rpm )
             {
+                //stable engine operation at target rpm
                 Tuareg_simulator.pCrank_simulator->sweep_counter++;
-
-                //keep current rpm
-                calc_timer_segments();
             }
-
 
             break;
 
@@ -214,20 +195,14 @@ void EXTI2_IRQHandler(void)
     }
 
 
+    /**
+    this can be executed even when the engine has stopped
+    */
+    //crank rpm follows target rpm
+    update_crank_rpm();
 
-    //set_debug_led(TOGGLE);
-}
-
-/******************************************************************************************************************************
-sw generated irq
- ******************************************************************************************************************************/
-void EXTI3_IRQHandler(void)
-{
-    //clear pending register
-    EXTI->PR= EXTI_Line3;
-
-
-
+    calc_timer_segments();
+    calc_cam_parameters();
 
 }
 

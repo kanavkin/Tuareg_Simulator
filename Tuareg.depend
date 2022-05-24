@@ -324,7 +324,7 @@
 1549917297 /home/oli/tenere/efi/Tuareg_Simulator/uart.h
 	"stm32_libs/stm32f10x/stm32f10x.h"
 
-1602277291 source:/home/oli/tenere/efi/Tuareg_Simulator/crank_simulator.c
+1635505647 source:/home/oli/tenere/efi/Tuareg_Simulator/crank_simulator.c
 	"stm32_libs/stm32f10x/stm32f10x.h"
 	"stm32_libs/stm32f10x/boctok/stm32f10x_gpio_boctok.h"
 	"stm32_libs/boctok_types.h"
@@ -337,7 +337,7 @@
 1548278307 /home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/boctok/stm32_gpio.h
 	"boctok_types.h"
 
-1602275113 /home/oli/tenere/efi/Tuareg_Simulator/crank_simulator.h
+1635505707 /home/oli/tenere/efi/Tuareg_Simulator/crank_simulator.h
 	"stm32_libs/boctok_types.h"
 	"trigger_wheel_layout.h"
 
@@ -559,7 +559,7 @@
 1552256396 /home/oli/tenere/efi/Tuareg_Simulator/waveform_buffer.h
 	"crank_simulator.h"
 
-1602276180 source:/home/oli/tenere/efi/Tuareg_Simulator/main.c
+1611749521 source:/home/oli/tenere/efi/Tuareg_Simulator/main.c
 	"stm32_libs/stm32f10x/stm32f10x.h"
 	"stm32_libs/stm32f10x/boctok/stm32f10x_gpio_boctok.h"
 	"stm32_libs/stm32f10x/boctok/stm32f10x_adc_boctok.h"
@@ -581,9 +581,10 @@
 
 1547852648 /home/oli/tenere/efi/Tuareg_Simulator/eeprom.h
 
-1549917034 /home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/boctok_types.h
+1611592444 /home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/boctok_types.h
 	<stdlib.h>
 	<stdint.h>
+	<stdbool.h>
 
 1549917034 /home/oli/tenere/efi/Tuareg_Simulator/stm32_libs/stm32f10x/stm32f10x.h
 	"cmsis/core_cm3.h"
@@ -810,7 +811,7 @@
 
 1601771035 /home/oli/tenere/efi/Tuareg_Simulator/trigger_wheel_layout.h
 
-1602276880 source:/home/oli/tenere/efi/Tuareg_Simulator/comm.c
+1603137251 source:/home/oli/tenere/efi/Tuareg_Simulator/comm.c
 	"utils.h"
 	"table.h"
 	"uart.h"

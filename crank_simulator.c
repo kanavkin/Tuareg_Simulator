@@ -8,6 +8,9 @@
 #include "uart.h"
 #include "conversion.h"
 
+#define CAM_IDLE_LEVEL ON
+#define CAM_ACTIVE_LEVEL OFF
+
 volatile crank_simulator_t Crank_simulator;
 
 
@@ -33,6 +36,51 @@ void set_cam_pin(output_pin_t level)
 
 
 /**
+this function implements the physical engine model by setting the crank rpm according to the
+target rpm and the maximum crank acceleration
+this function shall be called once at cycle end
+*/
+void update_crank_rpm()
+{
+    U64 delta_rpm= (Crank_simulator.crank_period_us * CRANK_ACCEL_RPM_PER_SQSEC) / 1000000UL;
+
+    if(delta_rpm > CRANK_MAX_ACCEL)
+    {
+        delta_rpm= CRANK_MAX_ACCEL;
+    }
+
+    if((Crank_simulator.target_rpm > Crank_simulator.rpm) )
+    {
+        //acceleration
+        if((Crank_simulator.rpm + delta_rpm) > Crank_simulator.target_rpm)
+        {
+            set_crank_rpm(Crank_simulator.target_rpm);
+        }
+        else
+        {
+            set_crank_rpm(Crank_simulator.rpm + delta_rpm);
+        }
+    }
+    else if((Crank_simulator.target_rpm < Crank_simulator.rpm) )
+    {
+        //deceleration
+        if( (Crank_simulator.rpm > delta_rpm) && ((Crank_simulator.rpm - delta_rpm) > Crank_simulator.target_rpm))
+        {
+            set_crank_rpm(Crank_simulator.rpm - delta_rpm);
+        }
+        else
+        {
+            set_crank_rpm(Crank_simulator.target_rpm);
+        }
+    }
+
+
+    Crank_simulator.crank_period_us= calc_period_us(Crank_simulator.rpm);
+
+}
+
+
+/**
 helper function
 stores the given rpm value to simulator and calculate the timer segments
 */
@@ -41,12 +89,31 @@ void set_crank_rpm(VU32 Rpm)
     if((Rpm > 0) && (Rpm <= CRANK_MAX_RPM))
     {
         Crank_simulator.rpm= Rpm;
-        Crank_simulator.crank_period_us= calc_period_us(Rpm);
     }
     else
     {
         Crank_simulator.rpm= DEFAULT_RPM;
-        Crank_simulator.crank_period_us= calc_period_us(DEFAULT_RPM);
+
+        UART_Send(TS_PORT, "\r\nclipped crank rpm to max value!\r\n");
+    }
+
+    UART_Send(TS_PORT, "\r\nrpm: ");
+    UART_Print_U(TS_PORT, Tuareg_simulator.pCrank_simulator->rpm, TYPE_U16, NO_PAD );
+}
+
+/**
+helper function
+stores the given rpm value to simulator and calculate the timer segments
+*/
+void set_target_rpm(VU32 Rpm)
+{
+    if((Rpm > 0) && (Rpm <= CRANK_MAX_RPM))
+    {
+        Crank_simulator.target_rpm= Rpm;
+    }
+    else
+    {
+        Crank_simulator.target_rpm= DEFAULT_RPM;
 
         UART_Send(TS_PORT, "\r\nclipped crank rpm to max value!\r\n");
     }
@@ -71,12 +138,16 @@ void set_continuous_mode()
             Tuareg_simulator.pCrank_simulator->cont_rpm= DEFAULT_RPM;
         }
 
-        set_crank_rpm(Tuareg_simulator.pCrank_simulator->cont_rpm);
+        //start simulation just at cont_rpm
+        Tuareg_simulator.pCrank_simulator->rpm = Tuareg_simulator.pCrank_simulator->cont_rpm;
+        Tuareg_simulator.pCrank_simulator->target_rpm = Tuareg_simulator.pCrank_simulator->cont_rpm;
+        Crank_simulator.crank_period_us= calc_period_us(Crank_simulator.rpm);
+
+        UART_Send(TS_PORT, "\r\nstarting continuous mode -> rpm: ");
+        UART_Print_U(TS_PORT, Crank_simulator.rpm, TYPE_U16, NO_PAD);
 
         calc_timer_segments();
-
-        UART_Send(TS_PORT, "\r\n starting continuous mode rpm: ");
-        UART_Print_U(TS_PORT, Crank_simulator.rpm, TYPE_U16, NO_PAD);
+//        calc_cam_parameters();
 
         start_crank_simulation();
     }
@@ -126,12 +197,16 @@ void set_sweep_mode()
         UART_Print_U(TS_PORT, Crank_simulator.sweep_hold, TYPE_U16, NO_PAD);
         UART_Send(TS_PORT, "\r\n");
 
-        //start simulation
-        set_crank_rpm(Tuareg_simulator.pCrank_simulator->sweep_start);
+        //start simulation just at sweep start rpm (no cranking simulation)
+        Tuareg_simulator.pCrank_simulator->rpm = Tuareg_simulator.pCrank_simulator->sweep_start;
+        Tuareg_simulator.pCrank_simulator->target_rpm = Tuareg_simulator.pCrank_simulator->sweep_start;
+        Crank_simulator.crank_period_us= calc_period_us(Crank_simulator.rpm);
 
         calc_timer_segments();
+        calc_cam_parameters();
 
         start_crank_simulation();
+
 
     }
 }
@@ -151,6 +226,15 @@ void calc_timer_segments()
     }
 }
 
+/**
+helper function
+calculates the current cam parameters
+*/
+void calc_cam_parameters()
+{
+//    Crank_simulator.cam_on_timing_us= calc_rot_duration_us(Crank_simulator.cam_offset_deg, Crank_simulator.crank_period_us);
+//    Crank_simulator.cam_duration_us= calc_rot_duration_us(Crank_simulator.cam_interval_deg, Crank_simulator.crank_period_us);
+}
 
 
 /**
@@ -197,6 +281,11 @@ void set_engine_type(engine_type_t new_engine)
         Crank_simulator.crank_segments.a_deg[CRK_POSITION_D1]= XTZ750_POSITION_D2_ANGLE - XTZ750_POSITION_D1_ANGLE;
         Crank_simulator.crank_segments.a_deg[CRK_POSITION_D2]= 360 - XTZ750_POSITION_D2_ANGLE;
 
+        Crank_simulator.cam_on_position= CRK_POSITION_A1;
+        Crank_simulator.cam_off_position= CRK_POSITION_B1;
+      //  Crank_simulator.cam_offset_deg= 30;
+        //Crank_simulator.cam_interval_deg= 50;
+
         Tuareg_simulator.simulated_engine= XTZ750;
 
     }
@@ -214,6 +303,10 @@ void set_engine_type(engine_type_t new_engine)
 
         Crank_simulator.crank_segments.a_deg[6]= 5;
         Crank_simulator.crank_segments.a_deg[7]= 85;
+
+//        Crank_simulator.cam_on_base_position= CRK_POSITION_C1;
+  //      Crank_simulator.cam_offset_deg= 10;
+    //    Crank_simulator.cam_interval_deg= 100;
 
         Tuareg_simulator.simulated_engine= XTZ660;
 
@@ -240,12 +333,16 @@ void start_crank_simulation()
     //first revolution
     Crank_simulator.crank_position= CRK_POSITION_A1;
     Crank_simulator.crank_turns =0;
+    Crank_simulator.phase_cyl1_comp= false;
 
     //load output compare value for the first pattern
     Segment_buffer= pull_segment_timing();
 
     //set the desired key signal level, irq will toggle it
     set_crank_pin(SIGNAL_LEVEL_KEY);
+
+    //init cam
+    set_cam_pin(CAM_IDLE_LEVEL);
 
     if(Segment_buffer > 0)
     {
@@ -293,6 +390,7 @@ void stop_crank_simulation()
     TIM2->CR1 &= ~TIM_CR1_CEN;
 
     set_crank_pin(SIGNAL_LEVEL_STB);
+    set_cam_pin(CAM_IDLE_LEVEL);
 
     Tuareg_simulator.crank_simulator_mode= SMODE_STOP;
 
@@ -300,6 +398,8 @@ void stop_crank_simulation()
     Crank_simulator.crank_position =0;
     Crank_simulator.crank_turns =0;
     Crank_simulator.rpm =0;
+    Crank_simulator.crank_period_us =0;
+    Crank_simulator.target_rpm =0;
 }
 
 
@@ -331,8 +431,8 @@ volatile crank_simulator_t * init_crank_simulator()
     NVIC_ClearPendingIRQ(TIM2_IRQn);
     NVIC_EnableIRQ(TIM2_IRQn);
 
-    //enable sw EXTI irq (prio 1)
-    NVIC_SetPriority(EXTI2_IRQn, 1UL);
+    //enable sw EXTI irq (prio 4)
+    NVIC_SetPriority(EXTI2_IRQn, 4UL);
     NVIC_ClearPendingIRQ(EXTI2_IRQn);
     NVIC_EnableIRQ(EXTI2_IRQn);
 
@@ -360,6 +460,7 @@ void TIM2_IRQHandler(void)
         //apply new simulator pin level
         set_crank_pin(TOGGLE);
 
+
         //crank pattern segment duration expired -> new engine position reached
         Crank_simulator.crank_position++;
 
@@ -372,6 +473,27 @@ void TIM2_IRQHandler(void)
             Crank_simulator.crank_position =0;
             Crank_simulator.crank_turns++;
         }
+
+
+        //check if crank is at TDC
+        if(Crank_simulator.crank_position == CRK_POSITION_B2)
+        {
+            Crank_simulator.phase_cyl1_comp= !Crank_simulator.phase_cyl1_comp;
+        }
+
+        //simplified cis signal model: active from cam_on_base_position, idle after cam_off_position
+        if(Crank_simulator.crank_position == Crank_simulator.cam_on_position)
+        {
+            if(Crank_simulator.phase_cyl1_comp == false)
+            {
+                set_cam_pin(CAM_ACTIVE_LEVEL);
+            }
+        }
+        else if(Crank_simulator.crank_position == Crank_simulator.cam_off_position)
+        {
+            set_cam_pin(CAM_IDLE_LEVEL);
+        }
+
 
         /**
         reload timer -> the array index of the next segment always matches the position number we just reached
